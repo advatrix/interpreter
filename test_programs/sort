@@ -1,0 +1,43 @@
+function insertion_sort(arr) do
+    int i := 1
+    int length := arr
+    len(length)
+    while i < length do
+        int tmp := arr(i)
+        int j := i - 1
+        while j > 0 do
+            if a(j) > tmp do
+                a(j+1) = a(j)
+                j := j - 1
+            eldef do
+                # здесь бы понадобился break
+            done
+        finish # зачем он вообще нужен?
+            a(i+1) := tmp
+        done
+    done
+done
+    
+    
+    
+function len(arr) do # как вернуть длину массива?
+    int i := 0
+    while t do
+        # нужен оператор != ?
+        if arr(i) = u do # считается, что в конце массива лежит неопределенное значение
+            arr := i
+            return
+        done
+        i := i + 1
+    done
+done
+
+
+function main do
+    # как задать массив?
+    int array
+    array(0) := 3
+    array(1) := false
+    array(2) := inf
+    ...
+    

@@ -1,0 +1,16 @@
+function factorial(n) do
+    if n = 0 do
+        n := 1
+        return
+    if n = 1 do
+        n := 1
+        return
+    k := n - 1
+    factorial(k)
+    n := n * k
+    return
+done
+
+function main do
+    int n := 5
+    factorial(n)
