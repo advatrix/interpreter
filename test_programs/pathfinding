@@ -1,0 +1,105 @@
+cell(?) map # array [[x, y, z, cell_type], ...] // three-dimensional array
+
+int slots := [nan, ...]
+int robot # array [x, y, z, angle, max_weight, slots : int[], busy_slots] // как задаётся количество слотов для загрузки коробок?
+ // где хранится информация о роботе?
+
+''' -1 <-- -->+1
+   --------
+  /   0    \   
+ /5        1\
+/            \
+\            /
+ \4        2/
+  \   3    /
+   --------
+
+'''
+int N := 0
+int NE := 1
+int SE := 2
+int S := 3
+int SW := 4
+int NW := 5
+
+
+
+
+    
+
+function find_exit(robot) do
+    int boxes := 0
+    int turn := 0
+    while map(robot(0))(robot(1))(robot(2)) ^ exit do // как задать условие выхода?
+        if turn do // если движемся не в приоритетном направлении
+            right
+            if look ^ 0 do
+                turn := turn + 1
+                forward(look)
+            done
+            eldef do
+                left
+                if look ^ 0 do
+                    forward(look)
+                done
+                eldef do
+                    left
+                    turn := turn - 1
+                done
+            done
+        done
+        eldef do // если движемся в приоритетном направлении
+            if look = 0 do // встретили препятствие в приоритетном направлении
+                if test = wall do // это препятствие нельзя подвинуть
+                    left
+                    turn := turn + 1
+                done
+                eldef do // это коробка
+                    if load(boxes) do
+                        boxes := boxes + 1 // попробуем куда-нибудь переставить коробку
+                        left
+                        while drop(boxes - 1) do
+                            left
+                            turn := turn + 1
+                        finish do
+                            while turn do
+                                right
+                                turn := turn - 1
+                            done
+                        done
+                    done
+                    eldef do
+                        left
+                        turn := turn + 1
+                    done
+                done
+            done
+            eldef do
+                while boxes do
+                    while drop(boxes) ^ false + left ^ 6 = 2 do
+                        left
+                        turn := turn + 1
+                    finish do
+                        if turn ^ 6 do
+                            boxes := boxes - 1
+                        done
+                        while turn do
+                            right
+                            turn := turn - 1
+                        done
+                    done
+                finish do
+                    forward(look)
+                done
+            done
+        done
+    done
+done
+                        
+                    
+                        
+                    
+                
+                
+            
+            
