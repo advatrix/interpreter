@@ -13,7 +13,7 @@ class Lexer():
         'INF', 'MINUS_INF', 'NAN', 'BOOL', 'TRUE', 'FALSE', 
         'UNDEF', 'CELL', 'EMPTY', 'WALL', 'BOX', 'EXIT', 'VAR',
         'OBRACKET', 'CBRACKET', 'ASSIGN', 'PLUS', 'MINUS', 'SHARP',
-        'XOR', 'LESS', 'GREATER', 'EQUAL', 'WHILE', 'DO', 'FINISH',
+        'CARET', 'LESS', 'GREATER', 'EQUAL', 'WHILE', 'DO', 'FINISH',
         'DONE', 'IF', 'ELDEF', 'ELUND', 'FORWARD', 'BACKWARD',
         'LEFT', 'RIGHT', 'LOAD', 'DROP', 'LOOK', 'TEST', 
         'FUNCTION', 'RETURN', 'IDENT', 'NL', 'UNKNOWN'
@@ -38,7 +38,7 @@ class Lexer():
         return t
     
     def t_DECIMAL(self, t):
-        r'[0-9]+'
+        r'[0-9]+(?!\w)'
         return t
     
     def t_HEXADECIMAL(self, t):
@@ -129,7 +129,7 @@ class Lexer():
         r'\#'
         return t
     
-    def t_XOR(self, t):
+    def t_CARET(self, t):
         r'\^'
         return t
     
@@ -156,10 +156,6 @@ class Lexer():
     def t_DO(self, t):
         r'(?i)do(?!\w)'
         return t
-    
-    
-    
-    
     
     def t_IF(self, t):
         r'(?i)if(?!\w)'
@@ -205,27 +201,18 @@ class Lexer():
         r'(?i)test(?!\w)'
         return t
     
-    
-    
     def t_RETURN(self, t):
         r'(?i)return(?!\w)'
         return t
     
-
-    
-    
     def t_INT(self, t):
         r'(?i)int(?!\w)'
-        return t  
-    
-    
+        return t      
     
     def t_IDENT(self, t):
         r'(?i)[a-z_][a-z0-9_]*'
         return t
-
-     
-    
+         
     def t_NL(self, t):
         r'\n'
         return t
@@ -247,8 +234,6 @@ class Lexer():
     def token(self):
         return self.lexer.token()
     
-    
-        
 
 if __name__ == '__main__':
     lexer = Lexer()
