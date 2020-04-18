@@ -1,50 +1,26 @@
-function fibonacci(n) do # в передаче параметров надо ли указывать тип?
-    if n < 0 do
-        ... ? как вернуть код ошибки?
-        n := -1
-        return
-    if n = 0 do
-        n(0) := 1 # единственный способ вернуть значение - через переданный параметр, причём он может быть только один
-        return
-    if n = 1 do
-        n(0) := 1
-        return
-    int i
-    i(0) := 1
-    # можно ли определить приведение инта к массиву и написать int i := 0?
-    # как объявлять массив сразу при инициализации? (нужна конструкция int i := [1, 2, nan, inf])
-    int curr := 1
-    int prev := 1
-    while i < n do
-        curr := curr + prev
-        prev := curr
-        i := i + 1
-    n := curr
-    return
-done
+// можно ли определить приведение инта к массиву и написать int i := 0?
+// как объявлять массив сразу при инициализации? (нужна конструкция int i := [1, 2, nan, inf])
 
 
-
-function fibonacci_2(params) do # params: [n], returns [n, result]
+function fibonacci(params) do // params: [n], returns [n, result]
     if params(0) < 0 do
-        params(1) := -1
+        params(1) := -1 // error
         return
     if params(0) <= 1 do
         params(1) := 1
         return
     int i
-    i(0) := 1
-    i(1) := 1
-    i(2) := 1
+    i(0) := 1 // counter
+    int prev := 1 // prev
+    int curr := 1 // curr
     while i(0) < params(0) do
         i(1) := i(1) + i(2)
         i(2) := i(1)
-        i(0) := i + 1
-    finish do
+        i(0) := i(0) + 1
+    finish do // зачем нужен finish?
         params(1) := i(1)
     done
 done
-    
     
 
 function main do

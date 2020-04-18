@@ -1,19 +1,4 @@
-function factorial(n) do
-    if n = 0 do
-        n := 1
-        return
-    if n = 1 do
-        n := 1
-        return
-    k := n - 1
-    factorial(k)
-    n := n * k
-    return
-done
-
-
-
-function factorial(n) do # param: n = [n], return: n = [n, result]
+function factorial(n) do // param: n = [n], return: n = [n, result]
     if n(0) < 2 do
         n(1) = 1
         return
@@ -28,5 +13,6 @@ done
 function main do
     int n := 5
     factorial(n)
+    result := n(1) // 120
     
     

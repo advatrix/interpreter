@@ -3,6 +3,7 @@ cell(?) map # array [[x, y, z, cell_type], ...] // three-dimensional array
 int slots := [nan, ...]
 int robot # array [x, y, z, angle, max_weight, slots : int[], busy_slots] // как задаётся количество слотов для загрузки коробок?
  // где хранится информация о роботе?
+ // является ли порядок eldef и elund строгим?
 
 ''' -1 <-- -->+1
    --------
