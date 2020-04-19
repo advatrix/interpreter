@@ -29,12 +29,7 @@ def test_case_insensitivity():
     assert lexer.token().type == 'BOX'
     assert lexer.token() is None
     
-
-def test_lang_mistakes():
-    lexer.input('inti iint don doner 4e e4 >> : :=')
-    assert lexer.token().type == 'IDENT'
-    assert lexer.token().type == 'IDENT'
-    assert lexer.token().type == 'IDENT'
-    assert lexer.token().type == 'IDENT'
-    assert lexer.token().type == 'UNKNOWN'
+def test_newline():
+    lexer.input('\n\n\n\n\n\n')
+    assert lexer.token().type == 'NL'
     assert lexer.token() is None

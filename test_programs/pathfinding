@@ -36,12 +36,12 @@ function find_exit(robot) do
             right
             if look ^ 0 do
                 turn := turn + 1
-                forward(look)
+                forward look
             done
             eldef do
                 left
                 if look ^ 0 do
-                    forward(look)
+                    forward look
                 done
                 eldef do
                     left
@@ -56,10 +56,10 @@ function find_exit(robot) do
                     turn := turn + 1
                 done
                 eldef do // это коробка
-                    if load(boxes) do
+                    if load boxes do
                         boxes := boxes + 1 // попробуем куда-нибудь переставить коробку
                         left
-                        while drop(boxes - 1) do
+                        while drop boxes - 1 do
                             left
                             turn := turn + 1
                         finish do
@@ -77,7 +77,7 @@ function find_exit(robot) do
             done
             eldef do
                 while boxes do
-                    while drop(boxes) ^ false + left ^ 6 = 2 do
+                    while drop boxes ^ false + left ^ 6 = 2 do
                         left
                         turn := turn + 1
                     finish do
@@ -89,8 +89,7 @@ function find_exit(robot) do
                             turn := turn - 1
                         done
                     done
-                finish do
-                    forward(look)
+                finish forward look
                 done
             done
         done

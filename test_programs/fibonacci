@@ -13,11 +13,11 @@ function fibonacci(params) do // params: [n], returns [n, result]
     i(0) := 1 // counter
     int prev := 1 // prev
     int curr := 1 // curr
-    while i(0) < params(0) do
+    while i(0) < params(0) do 
         i(1) := i(1) + i(2)
         i(2) := i(1)
         i(0) := i(0) + 1
-    finish do // зачем нужен finish?
+    finish // нет ли ошибки в тз? (тело цикла перед finish не заканчивается done)
         params(1) := i(1)
     done
 done

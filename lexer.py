@@ -9,17 +9,17 @@ class Lexer():
     )
     
     tokens = (
-        'SPACE', 'COMMA', 'INT', 'DECIMAL', 'HEXADECIMAL',
+        'COMMA', 'INT', 'DECIMAL', 'HEXADECIMAL',
         'INF', 'MINUS_INF', 'NAN', 'BOOL', 'TRUE', 'FALSE', 
         'UNDEF', 'CELL', 'EMPTY', 'WALL', 'BOX', 'EXIT', 'VAR',
         'OBRACKET', 'CBRACKET', 'ASSIGN', 'PLUS', 'MINUS', 'SHARP',
         'CARET', 'LESS', 'GREATER', 'EQUAL', 'WHILE', 'DO', 'FINISH',
         'DONE', 'IF', 'ELDEF', 'ELUND', 'FORWARD', 'BACKWARD',
         'LEFT', 'RIGHT', 'LOAD', 'DROP', 'LOOK', 'TEST', 
-        'FUNCTION', 'RETURN', 'IDENT', 'NL', 'UNKNOWN'
+        'FUNCTION', 'RETURN', 'IDENT', 'NL'
     )
     
-    t_ignore = ' '
+    t_ignore = ' \t'
     
     def __init__(self):
         self.lexer = lex.lex(module=self)
@@ -27,11 +27,6 @@ class Lexer():
       
     def input(self, data):
         return self.lexer.input(data)
-    
-
-    def t_SPACE(self, t):
-        r'\s+'
-        return t
     
     def t_COMMA(self, t):
         r'\,'
@@ -42,7 +37,7 @@ class Lexer():
         return t
     
     def t_HEXADECIMAL(self, t):
-        r'(?i)[A-F0-9]*h+'
+        r'(?i)[A-F0-9]*h+(?!\w)'
         return t
     
     def t_INF(self, t):
@@ -214,20 +209,12 @@ class Lexer():
         return t
          
     def t_NL(self, t):
-        r'\n'
-        return t
-
-    def t_UNKNOWN(self, t):
-        r'.+'
-        return t
-    
-    def t_newline(self, t):
         r'\n+'
         t.lexer.lineno += t.value.count('\n')
         return t
     
     def t_error(self, t):
-        sys.stderr.write(f'Illegal character {t.value[0]}\n')
+        sys.stderr.write(f'Illegal character: {t.value[0]} at line {t.lexer.lineno}\n')
         t.lexer.skip(1)
         t.lexer.begin('INITIAL')
     
@@ -237,10 +224,13 @@ class Lexer():
 
 if __name__ == '__main__':
     lexer = Lexer()
-    while True:
-        lexer.input(input())
-        for tok in lexer.lexer:
-            print(tok)
+    try:
+        while True:
+            lexer.input(input())
+            for tok in lexer.lexer:
+                print(tok)
+    except EOFError:
+        pass
 
     
     
