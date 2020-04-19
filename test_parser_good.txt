@@ -1,0 +1,39 @@
+
+int a, b, c, d
+int a := 3, b, d, e := 17h
+var r, d:= 14  ,    g
+b := 89
+c := e - 9
+
+v(yyy+34) := 8
+w(yyy+w3) := e(o)
+
+while a ^ forward 7 > i(6) + #e do
+    drop 6
+     look
+   test
+ finish forward -r
+done
+
+function(r) do
+
+    if a = look do
+        function func(g) do
+            if 5 do
+                return
+            done
+            eldef do
+                load 5
+                drop u
+            done
+            elund do
+                left
+            done
+        done
+    done
+    elund do
+        right
+        print(hello_world)
+    done
+done
+                
