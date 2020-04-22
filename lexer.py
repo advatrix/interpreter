@@ -16,7 +16,7 @@ class Lexer():
         'CARET', 'LESS', 'GREATER', 'EQUAL', 'WHILE', 'DO', 'FINISH',
         'DONE', 'IF', 'ELDEF', 'ELUND', 'FORWARD', 'BACKWARD',
         'LEFT', 'RIGHT', 'LOAD', 'DROP', 'LOOK', 'TEST', 
-        'FUNCTION', 'RETURN', 'IDENT', 'NL'
+        'FUNCTION', 'RETURN', 'IDENT', 'NL', 'OSQBRACKET', 'CSQBRACKET', 'SIZEOF'
     )
     
     t_ignore = ' \t'
@@ -38,6 +38,10 @@ class Lexer():
     
     def t_HEXADECIMAL(self, t):
         r'(?i)[A-F0-9]*h+(?!\w)'
+        return t
+    
+    def t_SIZEOF(self, t):
+        r'(?i)sizeof(?!\w)'
         return t
     
     def t_INF(self, t):
@@ -106,6 +110,14 @@ class Lexer():
     
     def t_CBRACKET(self, t):
         r'\)'
+        return t
+    
+    def t_OSQBRACKET(self, t):
+        r'\['
+        return t
+    
+    def t_CSQBRACKET(self, t):
+        r'\]'
         return t
     
     def t_ASSIGN(self, t):

@@ -113,9 +113,22 @@ class Parser():
             p[0] = SyntaxTreeNode('vars_list', children=p[1])
         
     def p_assignment(self, p):
-        '''assignment : variable ASSIGN expression'''
+        '''assignment : variable ASSIGN expression
+        | variable ASSIGN array'''
         p[0] = SyntaxTreeNode('assignment', children=[p[1], p[3]])
         
+    def p_array(self, p):
+        'array : OSQBRACKET expr_list CSQBRACKET'
+        p[0] = SyntaxTreeNode('array', children=p[2])
+        
+    def p_expr_list(self, p):
+        '''expr_list : expr_list COMMA expression
+        | expression'''
+        if len(p) == 2:
+            p[0] = SyntaxTreeNode('expr_list', children=p[1])
+        else:
+            p[0] = SyntaxTreeNode('expr_list', children=[p[1], p[3]])
+
     def p_variable(self, p):
         '''variable : IDENT OBRACKET expression CBRACKET
         | IDENT'''
@@ -173,7 +186,8 @@ class Parser():
         | LOAD expression
         | DROP expression
         | LOOK
-        | TEST'''
+        | TEST
+        | SIZEOF variable'''
         if len(p) == 2:
             p[0] = SyntaxTreeNode('operator', p[1])
         else:

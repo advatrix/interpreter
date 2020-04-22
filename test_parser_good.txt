@@ -5,6 +5,8 @@ var r, d:= 14  ,    g
 b := 89
 c := e - 9
 
+bool d := [a, u, 16, look, sizeof c]
+
 v(yyy+34) := 8
 w(yyy+w3) := e(o)
 

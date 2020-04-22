@@ -1,8 +1,9 @@
 function insertion_sort(arr) do
     int i := 1
-    int length := arr
-    len(length)
-    while i < length do
+    int length := 0
+    int pack := [arr, length]
+    len(pack)
+    while i < pack(1) do
         int tmp := arr(i)
         int j := i - 1
         while j > 0 do
@@ -12,20 +13,20 @@ function insertion_sort(arr) do
             eldef do
                 # здесь бы понадобился break
             done
-        finish # зачем он вообще нужен?
-            a(i+1) := tmp
+        finish a(i+1) := tmp
         done
     done
 done
     
     
     
-function len(arr) do # как вернуть длину массива?
+function len(pack) do
+    arr := pack(0)
     int i := 0
     while t do
         # нужен оператор != ?
-        if arr(i) = u do # считается, что в конце массива лежит неопределенное значение
-            arr := i
+        if arr(i) = u do # считается, что в конце массива лежит неопределенное значение?
+            pack(1) := i + 1
             return
         done
         i := i + 1
