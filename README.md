@@ -1,2 +1,2 @@
-# CS412AT-Interprener
-Interprener for a simple programming language
+# Interpreter
+Interpreter for a simple programming language
