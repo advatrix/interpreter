@@ -1,3 +1,10 @@
-int bool cell undef
+function () do else
 
-main function
+ce := 5
+
+int bool
+
+f := 677e;
+
+
+nonewline := t

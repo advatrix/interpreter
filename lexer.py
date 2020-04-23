@@ -4,6 +4,7 @@ import ply.lex as lex
 import re
 import sys
 
+
 class Lexer():
     states = (
     )
@@ -226,8 +227,8 @@ class Lexer():
         return t
     
     def t_error(self, t):
-        sys.stderr.write(f'Illegal character: {t.value[0]} at line {t.lexer.lineno}\n')
-        t.lexer.skip(1)
+        sys.stderr.write(f'Illegal character: "{t.value}" at line {t.lexer.lineno}\n')
+        t.lexer.skip(len(t.value))
         t.lexer.begin('INITIAL')
     
     def token(self):
