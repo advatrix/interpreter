@@ -1,17 +1,181 @@
 # usr/bin/env python
 
+
+# TODO: SymTableItem -> Var
+# CastManager.* -> Var
+
 from __future__ import annotations
 import sys
 import parser
 from typing import List
 
-class SymTableItem:
+class Var:
     def __init__(self, symtype, symvalue):
         self.type = symtype
         self.value = symvalue
         
     def __repr__(self):
         return f'{self.type}, {self.value}'
+    
+
+class InterpreterNameError(Exception):
+    pass
+
+
+class InterpreterRedeclarationError(Exception):
+    pass
+
+
+class InterpreterCastError(Exception):
+    pass
+
+
+class InterpreterValueError(Exception):
+    pass
+
+
+
+
+
+class Cell:
+    def __init__(self, x, y, z, type_):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.type = type_
+        
+    def __repr__(self):
+        return f'{self.x} {self.y} {self.z} : {self.type_}
+
+class CellType:
+    type = 'cell'
+    
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return self.type
+
+class Empty(CellType):
+    type = 'empty'
+
+    
+class Wall(CellType):
+    type = 'wall'
+
+
+        
+class Undef(CellType):
+    type = 'undef'
+    
+    def __init__(self):
+        pass
+    
+class Box:
+    type = 'box'
+    
+    def __init__(self, weight):
+        self.weight = weight
+        
+    def __repr__(self):
+        return f'box, weight: {self.weight}'
+    
+class Exit:
+    type = 'exit'
+    
+    def __init__(self):
+        pass
+
+    
+    
+class CastManager:
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return "I'm just a cast manager, and I have nothing interesting to show you!'
+    
+    @staticmethod
+    def cast(type_, var):
+        if type_ == var.type:
+            return var
+        if type_ == 'bool':
+            if var.type == 'int':
+                return int_to_bool(var)
+            if var.type == 'cell':
+                return cell_to_bool(var)
+        if type_ == 'int':
+            if var.type == 'bool':
+                return bool_to_int(var)
+            if var.type == 'cell':
+                return cell_to_int(var)
+        if type_ == 'cell':
+            if var.type == 'bool':
+                return bool_to_cell(var)
+            if var.type == 'int':
+                return int_to_cell(var)
+        else:
+            raise ValueError('wrong type')
+    
+    @staticmethod # TODO: return Var (SymTableItem) instance
+    def bool_to_int(value):
+        if value.value == 'true':
+            return Var('int', 1)
+        elif value.value == 'false':
+            return Var('int', 0)
+        elif value.value == 'undef':
+            return Var('int', 'undef')
+        raise InterpreterValueError
+        
+    @staticmethod
+    def int_to_bool(value):
+        if value.value == '0':
+            return Var('bool', 'false')
+        elif isinstance(value.value, int):
+            return Var('bool', 'true')
+        raise InterpreterValueError
+    
+    @staticmethod
+    def cell_to_bool(value):
+        if value.value in ['empty', 'exit']:
+            return Var('bool', 'true')
+        elif value.value in ['box', 'wall']:
+            return Var('bool', 'false')
+        return value
+    
+    @staticmethod
+    def bool_to_cell(value):
+        if value.value == 'undef':
+            return Var('cell', Undef())
+        raise InterpreterCastError
+        
+    @staticmethod
+    def cell_to_int(value):
+        if value.value.type == 'empty':
+            return Var('int', 0)
+        elif value.value.type == 'wall':
+            return Var('int', 'inf')
+        elif value.value.type == 'box':
+            return Var('int', value.weight)
+        elif value.value.type == 'exit':
+            return Var('int', '-inf')
+        elif value.value.type == 'undef':
+            return Var('int', 'nan')
+        raise InterpretValueError
+            
+    @staticmethod
+    def int_to_cell(value):
+        if value.value == 0:
+            return Var('cell', Empty())
+        elif value.value == 'inf':
+            return Var('cell', Wall())
+        elif value == '-inf':
+            return Var('cell', Exit())
+        elif value == 'nan':
+            return Var('cell', Undef())
+        elif isinstance(value.value, int):
+            return Var('cell', Box(value))
+        raise InterpreterValueError
 
 
 class Interpreter:
@@ -20,12 +184,16 @@ class Interpreter:
         'redeclaration': 2,
         'undeclared': 3,
         'index_error': 4,
-        'unknown_func': 5
+        'unknown_func': 5,
+        'cast': 6,
+        'value': 7
               }
     
     
-    def __init__(self, parser):
+    
+    def __init__(self, parser, caster=CastManager()):
         self.parser = parser
+        self.cast = caster
         
     def interpret(self, map_description, program):
         self.map = map_description
@@ -72,7 +240,7 @@ class Interpreter:
                 self._error(self.error['index_error'], node)
             return
         elif node.type == 'const':
-            return node.value
+            return self._const(node.value)
         elif node.type == 'un_op':
             if node.value == '-':
                 return self._negative(node.children)
@@ -124,29 +292,121 @@ class Interpreter:
         elif node.type == 'function_description':
             pass
         
+    def _negative(self, node):
+        expr = self._interpret_node(node)
+        return (-1) * self.cast.cast('int', expr)
+    
+    def _sum(self, node):
+        expr = self._interpret_node(node)
+        if isinstance(expr, list):
+            return sum[self.cast.cast('int', a) for a in expr]
+        return self.cast.cast('int', expr)
+    
+    def _plus(self, op1, op2):
+        expr1 = self.cast.cast('int', self._interpret_node(op1))
+        expr2 = self.cast.cast('int', self._interpret_node(op2))
+        return Var('int', expr1.value + expr2.value)
+    
+    def _minus(self, op1, op2):
+        expr1 = self.cast.cast('int', self._interpret_node(op1))
+        expr2 = self.cast.cast('int', self._interpret_node(op2))
+        return Var('int', expr1.value - expr2.value)
+    
+    def _xor(self, op1, op2):
+        expr1 = self.cast.cast('bool', self._interpret_node(op1))
+        expr2 = self.cast.cast('bool', self._interpret_node(op2))
+        if expr1.value in ['true', 'false'] and expr2.value in ['true', 'false'] and expr1.value != expr2.value:
+            return Var('bool', 'true')
+        return Var('bool', 'false')
+    
+    def _gr(self, op1, op2):
+        expr1 = self.cast.cast('int', self._interpret_node(op1))
+        expr2 = self.cast.cast('int', self._interpret_node(op2))
+        return Var('bool', 'true') if expr1.value > expr2.value else Var('bool', 'false')
+    
+    def _ls(self, op1, op2):
+        expr1 = self.cast.cast('int', self._interpret_node(op1))
+        expr2 = self.cast.cast('int', self._interpret_node(op2))
+        return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
+    
+    def _eq(self, op1, op2):
+        expr1 = self.cast.cast('int', self._interpret_node(op1))
+        expr2 = self.cast.cast('int', self._interpret_node(op2))
+        return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
+        
+    def _const(self, value):
+        if value.isdigit():
+            return Var('int', int(value))
+        else:
+            return Var('int', int(value, 16))
                                 
     def _declaration(self, node, _type):
         if node.type == 'vars_list':
             for child in node.children:
                 self._declaration(child, _type)
-        elif node.type == 'ident':
-            if node.value in self.sym_table.keys():
+        else:
+            try:
+                self._create_new_var(node.type, node.value)
+            except InterpreterRedeclarationError:
                 self._error(errors['redeclaration'], node)
-            else:
-                self.sym_table[node.value] = SymTableItem(type, None)
-        elif node.type == 'assignment':
+        if node.type == 'assignment':
             variable = node.children[0]
             if node.children[1].type != 'array':
                 expr = self._interpret_node(node.children[1])
-                self._assign(_type, variable, expr)
+                try:
+                    self._assign(_type, variable, expr)
+                except InterpreterCastError:
+                    self._error(errors['cast'], node)
+                except InterpreterValueError:
+                    self._error(errors['value'], node)
             else:
-                arr = self._array(node.chilren[1])
-                self._assign(_type, variable, arr)
+                nodearr = self._array(node.chilren[1])
+                arr = [self._interpret_node(i) for i in nodearr]
+                self._assign_array(_type, variable, arr)
                 
-    def _assign(self, _type, variable, expr: SymTableItem):
-        # TODO: приведение типов
-        if _type == expr.type:
-
+    def _create_new_var(self, _type, name):
+        if name in self.symtable.keys():
+            raise InterpreterRedeclarationError
+        self.symtable[name] = Var(_type, None)
+                
+    def _assign(self, _type, variable, expr: Var):
+        if variable not in self.sym_table.keys():
+            raise InterpreterNameError
+        if _type in [expr.type, 'var']:
+            self.sym_table[variable] = expr
+        elif not isinstance(expr.value, list):
+            casted_value = self.cast.cast(_type, expr)
+            self.sym_table[variable] = casted_value
+        else:
+            self._assign_array(_type, variable, expr)
+    
+    def self._assign_array(_type, variable, arr):
+        if _type != 'var':
+            cast_arr = [self.cast.cast(_type, a) for a in arr if a.type != _type else a]
+            self.sym_table[variable] = cast_arr
+        else:
+            prob_type = arr[0].type
+            cast_arr = [self.cast.cast(prob_type, a) for a in arr]
+            self.sym_table[variable] = cast_arr
+            
+    def _array(self, node) -> list:
+        ret = []
+        self._array_from_tree(node, ret)
+        return ret
+        
+    def _array_from_tree(self, node, ret: list):
+        if node:
+            if node.children:
+                if isinstance(node.children, list):
+                    for child in node.children:
+                        self._array_from_tree(child, ret)
+                else:
+                    self._array_from_tree(child, ret)
+            else:
+                ret.append(node)
+            
+            
+            
         
     def _error(self, err_type, node):
         sys.stderr.write(f'Error {err_type}: ')
@@ -156,9 +416,13 @@ class Interpreter:
         elif err_type == 2:
             sys.stderr.write(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is already declared\n')
         elif err_type == 3:
-            sys.stderr.write(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is used before declaration\n')
+            sys.stderr.write(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is not defined\n')
         elif err_type == 4:
             sys.stderr.write(f'index error "{node.value}" at {node.lineno}:{node.lexpos}\n')
         elif err_type == 5:
             sys.stderr.write(f'Unknown function call "{node.value}" at {node.lineno}:{node.lexpos}\n')
+        elif err_type == 6:
+            sys.stderr.write(f'failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
+        elif err_type == 7:
+            sys.stderr.write(f'incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
     
