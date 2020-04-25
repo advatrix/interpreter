@@ -12,29 +12,29 @@ from typing import List
 
 class Robot:
     def __init__(self, x, y, z, rot, capacity, map_):
-    ''' Rotation:
-      -1 <-- -->+1
-       --------
-      /   0    \   
-     /5        1\
-    /            \ 
-    \            /
-     \4        2/
-      \   3    /
-       --------
-       
-       Coordinates:
-       ^ X  ^ Y
-       |   /
-       |  /
-       | /
-       |/
-       /\
-         \
-          V Z
-       
-       
-    '''
+        """ Rotation:
+          -1 <-- -->+1
+           --------
+          /   0    \   
+         /5        1\
+        /            \ 
+        \            /
+         \4        2/
+          \   3    /
+           --------
+
+           Coordinates:
+           ^ X  ^ Y
+           |   /
+           |  /
+           | /
+           |/
+           /\
+             \
+              V Z
+
+
+        """ 
         self.x = x
         self.y = y
         self.z = z
@@ -241,10 +241,22 @@ class Var:
 
 
 class RedeclarationError(Exception):
+    """Exception for redeclared variables"""
     pass
 
 
 class CastError(Exception):
+    """Exception for casting failure"""
+    pass
+
+
+class ReturnError(Exception):
+    """Exception for RETURN keyword outside any function"""
+    pass
+
+
+class StopExecution(Exception):
+    """Exception for RETURN keyword inside a function (like StopIteration in generators)"""
     pass
 
 
@@ -259,7 +271,7 @@ class Cell:
         self.type = type_
         
     def __repr__(self):
-        return f'{self.x} {self.y} {self.z} : {self.type_}
+        return f'{self.x} {self.y} {self.z} : {self.type_}'
 
 class CellType:
     type = 'cell'
@@ -393,19 +405,22 @@ class CastManager:
 
 
 class Interpreter:
-    errors  = {
-        'no_main': 1,
-        'redeclaration': 2,
-        'undeclared': 3,
-        'index_error': 4,
-        'unknown_func': 5,
-        'cast': 6,
-        'value': 7
-              }
+    """
     
+    ERRORS:
+    (1) - 'nomain' - no main function (no entry point in code)
+    (2) - 'redecl' - redeclaration of a variable
+    (3) - 'undecl' - undeclared variable usage
+    (4) - 'index' - IndexError
+    (5) - 'unfunc' - undeclared function usage
+    (6) - 'cast' - CastError
+    (7) - 'value' - ValueError
+    (8) - 'return' - RETURN outside any function
+    (9) - 'gen' - this is not a program!
     
-    
-    def __init__(self, parser, caster=CastManager()):
+    """
+       
+    def __init__(self, parser=parser.Parser(), caster=CastManager()):
         """
         Object fields:
         self.sym_table -- scoped symbol table: array of symbol tables,
@@ -417,7 +432,7 @@ class Interpreter:
         self.map = None
         self.program = None
         self.sym_table = [dict()]
-        self.scope_level = 0
+        self.scope = 0
         self.Robot = None
         
     def interpret(self, map_description, program):
@@ -426,9 +441,11 @@ class Interpreter:
         self.robot: Robot = None  #implement it
         try:
             self.tree, self.funcs = self.parser.parse(program)
-        except
+        except:
+            self._error('gen')
+            return
         if 'main' not in funcs.keys():
-            self._error(errors['no_main'])
+            self._error('nomain')
             return
         self._interpret_tree(tree)
         self._interpret_tree(funcs['main'])
@@ -443,7 +460,7 @@ class Interpreter:
             self._interpret_node(node.children)
         elif node.type == 'stmt_list':
             for child in node.children:
-                self.interpret_node(child)
+                self._interpret_node(child)
         elif node.type == 'declaration_list':
             vars_type = node.value
             children = node.children.children
@@ -506,6 +523,8 @@ class Interpreter:
                 return self._test()
             elif node.value.lower() == 'sizeof':
                 return self._sizeof(node.children)
+            elif node.value.lower() == 'return':
+                self._return(node)
         elif node.type == 'while':
             self._while(node)
         elif node.type == 'if':
@@ -514,6 +533,13 @@ class Interpreter:
             return self._unnamed_function(node)
         elif node.type == 'function_description':
             pass
+        
+    def _return(self, node):
+        if not self.scope_depth:
+            self._error('return', node)
+        else:
+            raise StopExecution
+            
         
     def _variable(self, node):
         var = node.value
@@ -646,7 +672,7 @@ class Interpreter:
     def _sum(self, node):
         expr = self._interpret_node(node)
         if isinstance(expr, list):
-            return sum[self.cast.cast('int', a) for a in expr]
+            return sum([self.cast.cast('int', a) for a in expr])
         return self.cast.cast('int', expr)
     
     def _plus(self, op1, op2):
@@ -699,6 +725,7 @@ class Interpreter:
             except RedeclarationError:
                 self._error(errors['redeclaration'], node)
         if node.type == 'assignment':
+            # self._create_new_var(_type, node.value)
             variable = node.children[0]
             if node.children[1].type != 'array':
                 expr = self._interpret_node(node.children[1])
@@ -714,9 +741,9 @@ class Interpreter:
                 self._assign_array(_type, variable, arr)
                 
     def _create_new_var(self, _type, name):
-        if name in self.symtable[self.scope].keys():
+        if name in self.sym_table[self.scope].keys():
             raise RedeclarationError
-        self.symtable[self.scope][name] = Var(_type, None)
+        self.sym_table[self.scope][name] = Var(_type, None)
                 
     def _assign(self, _type, variable, expr: Var):
         if variable not in self.sym_table[self.scope].keys():
@@ -731,7 +758,7 @@ class Interpreter:
     
     def _assign_array(_type, variable, arr):
         if _type != 'var':
-            cast_arr = [self.cast.cast(_type, a) for a in arr if a.type != _type else a]
+            cast_arr = [self.cast.cast(_type, a) for a in arr]
             self.sym_table[self.scope][variable] = cast_arr
         else:
             prob_type = arr[0].type
