@@ -1,13 +1,119 @@
-# usr/bin/env python
+#! /usr/bin/env python
 
 
-# TODO: SymTableItem -> Var
-# CastManager.* -> Var
+# TODO: scopes
+# map description
+# robot loading
 
 from __future__ import annotations
 import sys
 import parser
 from typing import List
+
+class Robot:
+    def __init__(self, x, y, z, rot, capacity, slots_num, map_):
+    ''' Rotation:
+      -1 <-- -->+1
+       --------
+      /   0    \   
+     /5        1\
+    /            \ 
+    \            /
+     \4        2/
+      \   3    /
+       --------
+       
+       Coordinates:
+       ^ X  ^ Y
+       |   /
+       |  /
+       | /
+       |/
+       /\
+         \
+          V Z
+       
+       
+    '''
+        self.x = x
+        self.y = y
+        self.z = z
+        self.rot = rot
+        self.capacity = capacity
+        self.slots = [None for _ in range(slots_num)]
+        self.map = map_
+        
+    def __repr__(self):
+        return f'''({self.x}, {self.y}, {self.z}):{self.rot}
+Slots: {self.slots}
+Capacity: {self.sum()}/{self.capacity}'''
+        
+    def forward(self, dist): # what if cell = undef??
+        for i in range(dist):
+            if rot == 0:
+                next = self.map[self.y+1][self.x][self.z-1]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.y += 1
+                self.z -= 1
+            elif rot == 1:
+                next = self.map[self.y][self.x+1][self.z-1]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.x += 1
+                self.z -= 1
+            elif rot == 2:
+                next = self.map[self.y-1][self.x+1][self.z]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.x += 1
+                self.y -= 1
+            elif rot == 3:
+                next = self.map[self.y-1][self.x][self.z+1]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.z += 1
+                self.y -= 1
+            elif rot == 4:
+                next = self.map[self.y][self.x-1][self.z+1]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.z += 1
+                self.x -= 1
+            elif rot == 5:
+                next = self.map[self.y+1][self.x-1][self.z]
+                if next.type.type in ['box', 'wall']:
+                    return
+                self.y += 1
+                self.x -= 1
+                    
+    def backward(self, dict):
+        raise NotImplementedError
+        
+    def left(self):
+        raise NotImplementedError
+    
+    def right(self):
+        raise NotImplementedError
+        
+    def load(self, expr):
+        raise NotImplementedError
+        
+    def drop(self, expr):
+        raise NotImplementedError
+        
+    def look(self):
+        raise NotImplementedError
+        
+    def test(self):
+        raise NotImplementedError
+                
+                
+                        
+                
+            
+
+
 
 class Var:
     def __init__(self, symtype, symvalue):
@@ -22,15 +128,11 @@ class InterpreterNameError(Exception):
     pass
 
 
-class InterpreterRedeclarationError(Exception):
+class RedeclarationError(Exception):
     pass
 
 
-class InterpreterCastError(Exception):
-    pass
-
-
-class InterpreterValueError(Exception):
+class CastError(Exception):
     pass
 
 
@@ -93,7 +195,7 @@ class CastManager:
         pass
     
     def __repr__(self):
-        return "I'm just a cast manager, and I have nothing interesting to show you!'
+        return "I'm just a cast manager, and I have nothing interesting to show you!"
     
     @staticmethod
     def cast(type_, var):
@@ -125,7 +227,7 @@ class CastManager:
             return Var('int', 0)
         elif value.value == 'undef':
             return Var('int', 'undef')
-        raise InterpreterValueError
+        raise ValueError
         
     @staticmethod
     def int_to_bool(value):
@@ -133,7 +235,7 @@ class CastManager:
             return Var('bool', 'false')
         elif isinstance(value.value, int):
             return Var('bool', 'true')
-        raise InterpreterValueError
+        raise ValueError
     
     @staticmethod
     def cell_to_bool(value):
@@ -147,7 +249,7 @@ class CastManager:
     def bool_to_cell(value):
         if value.value == 'undef':
             return Var('cell', Undef())
-        raise InterpreterCastError
+        raise CastError
         
     @staticmethod
     def cell_to_int(value):
@@ -175,7 +277,7 @@ class CastManager:
             return Var('cell', Undef())
         elif isinstance(value.value, int):
             return Var('cell', Box(value))
-        raise InterpreterValueError
+        raise ValueError
 
 
 class Interpreter:
@@ -199,6 +301,9 @@ class Interpreter:
         self.map = map_description
         self.program = program
         self.sym_table = dict()
+        self.scope = None
+        self.display = []
+        self.robot: Robot = None #implement it
         try:
             self.tree, self.funcs = self.parser.parse(program)
         except
@@ -263,26 +368,27 @@ class Interpreter:
             if node.value not in self.funcs:
                 self._error(errors['unknown_func'], node)
                 return
+            self.scope = node.value
             return self._interpret_node(self.funcs[node.value])
         elif node.type == 'operator':
             if node.value.lower() == 'forward':
-                return self._forward(self._interpret_node(node.children))
+                return self._forward(node.children)
             elif node.value.lower() == 'backward':
-                return self._backward(self._interpret_node(node.childen))
+                return self._backward(node.childen)
             elif node.value.lower() == 'left':
                 self._left()
             elif node.value.lower() == 'right':
                 self.right()
             elif node.value.lower() == 'load':
-                return self._load(self._interpret_node(node.children))
+                return self._load(node.children)
             elif node.value.lower() == 'drop':
-                return self._drop(self._interpret_node(node.children))
+                return self._drop(node.children)
             elif node.value.lower() == 'look':
                 return self._look()
             elif node.value.lower() == 'test':
                 return self._test()
             elif node.value.lower() == 'sizeof':
-                return self._sizeof(self._interpret_node(node.children))
+                return self._sizeof(node.children)
         elif node.type == 'while':
             self._while(node)
         elif node.type == 'if':
@@ -292,6 +398,66 @@ class Interpreter:
         elif node.type == 'function_description':
             pass
         
+    def _while(self, node):
+        raise NotImplementedError
+        
+    def _if(self, node):
+        raise NotImplementedError
+        
+    def _unnamed_function(self, node):
+        raise NotImplementedError
+        
+    def _sizeof(self, node):
+        expr = self._interpret_node(node)
+        if expr not in self.sym_table.keys():
+            self._error(errors['value'], node)
+            return
+        if isinstance(self.sym_table[expr].value, list):
+            return Var('int', len(self.sym_table[expr].value))
+        else:
+            return Var('int', 1)
+        
+        
+    def _forward(self, node):
+        try:
+            expr = self.cast.cast('int', self._interpret_node(node))
+            self.robot.forward(expr)
+        except CastError:
+            self._error(errors['cast'], node)
+    
+    def _backward(self, node):
+        try:
+            expr = self.cast.cast('int', self._interpret_node(node))
+            self.robot.backward(expr)
+        except CastError:
+            self._error(errors['cast'], node)
+            
+    def _left(self):
+        self.robot.left()
+        
+    def _right(self):
+        self.robot.right()
+        
+    def _load(self, node):
+        try:
+            expr = self.cast.cast('int', self._interpret_node(node))
+            return self.robot.load(expr)
+        except CastError:
+            self._error(errors['cast'], node)
+        
+    def _drop(self, node):
+        try:
+            expr = self.cast.cast('int', self._interpret_node(node))
+            return self.robot.drop(expr)
+        except CastError:
+            self._error(errors['cast'], node)  
+            
+    def _look(self):
+        return self.robot.look()
+    
+    def _test(self):
+        return self.robot.test()
+    
     def _negative(self, node):
         expr = self._interpret_node(node)
         return (-1) * self.cast.cast('int', expr)
@@ -347,7 +513,7 @@ class Interpreter:
         else:
             try:
                 self._create_new_var(node.type, node.value)
-            except InterpreterRedeclarationError:
+            except RedeclarationError:
                 self._error(errors['redeclaration'], node)
         if node.type == 'assignment':
             variable = node.children[0]
@@ -355,9 +521,9 @@ class Interpreter:
                 expr = self._interpret_node(node.children[1])
                 try:
                     self._assign(_type, variable, expr)
-                except InterpreterCastError:
+                except CastError:
                     self._error(errors['cast'], node)
-                except InterpreterValueError:
+                except ValueError:
                     self._error(errors['value'], node)
             else:
                 nodearr = self._array(node.chilren[1])
@@ -366,7 +532,7 @@ class Interpreter:
                 
     def _create_new_var(self, _type, name):
         if name in self.symtable.keys():
-            raise InterpreterRedeclarationError
+            raise RedeclarationError
         self.symtable[name] = Var(_type, None)
                 
     def _assign(self, _type, variable, expr: Var):
@@ -380,7 +546,7 @@ class Interpreter:
         else:
             self._assign_array(_type, variable, expr)
     
-    def self._assign_array(_type, variable, arr):
+    def _assign_array(_type, variable, arr):
         if _type != 'var':
             cast_arr = [self.cast.cast(_type, a) for a in arr if a.type != _type else a]
             self.sym_table[variable] = cast_arr
