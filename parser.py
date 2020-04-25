@@ -5,25 +5,23 @@ import ply.yacc as yacc
 from lexer import Lexer
 from ply.lex import LexError
 import sys
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 class SyntaxTreeNode:
-    def __init__(self, _type='const', value=None, children=[], lineno=None, lexpos=None):
+    def __init__(self, _type='const', value=None, children=None, lineno=None, lexpos=None):
         self.type = _type
         self.value = value
-        self.children = children
+        self.children = children or []
         self.lineno = lineno
         self.lexpos = lexpos
         
     def __repr__(self):
         return f'''{self.type} {self.value} {self.lineno}:{self.lexpos}'''
-    
-    
+
     def print_(self, level: int = 0):
         print(' ' * level, self)
-        
-    
+
     def print(self, level: int = 0):
         if self is None:
             return
@@ -40,15 +38,12 @@ class SyntaxTreeNode:
                     value.print(level + 2)
 
 
-class SyntaxTreeNode_Old():  # возможно эффективнее будет хранить типы узлов в статических полях-числах
+'''class SyntaxTreeNode_Old():  # возможно эффективнее будет хранить типы узлов в статических полях-числах
     def __init__(self, type_='const', value=None, children: Optional[List[SyntaxTreeNode]] = None):
         self.type = type_
         self.value = value
         self.children = children
         self.acc = None
-        
-    def __repr__(self):
-        return f'''{self.type} {self.value}'''
     
     def print(self, level: int = 0):
         print(' '*level, ' ', self)
@@ -69,29 +64,23 @@ class SyntaxTreeNode_Old():  # возможно эффективнее буде�
                     if isinstance(value, str):
                         print(' '*(level + 2), value)
                     elif isinstance(value, SyntaxTreeNode):
-                        value.print(level + 2)
+                        value.print(level + 2)'''
 
 
-class Parser():
+class Parser:
     tokens = Lexer.tokens
-    
-    
+
     def __init__(self):
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, debug=False)
         self._functions: Dict[str, SyntaxTreeNode] = dict()
         
-    def parse(self, s) -> List:
+    def parse(self, s) -> Tuple[SyntaxTreeNode, Dict]:
         try:
             res = self.parser.parse(s)
             return res, self._functions
         except LexError:
-            sys.stderr.write(f'Illegal token {s}\n', s)
-            
-    def check_program(self, prog: str) -> bool:
-        self.acc = True
-        self.parser.parse(prog)
-        return self.acc            
+            sys.stderr.write(f'Illegal token {s}\n')
             
     def p_program(self, p):
         'program : stmt_list'

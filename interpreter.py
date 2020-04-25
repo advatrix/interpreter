@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! usr/bin/env python
 
 
 # TODO: error handling refactoring
@@ -9,6 +9,7 @@ from __future__ import annotations
 import sys
 import parser
 from typing import List
+
 
 class Robot:
     def __init__(self, x, y, z, rot, capacity, map_):
@@ -52,93 +53,93 @@ Capacity: {self.sum()}/{self.capacity}'''
         return sum([box.weight for box in self.slots if box])
     
     def next(self):
-        if rot == 0:
+        if self.rot == 0:
             return self.map[self.y+1][self.x][self.z-1]
-        if rot == 1:
+        if self.rot == 1:
             return self.map[self.y][self.x+1][self.z-1]
-        if rot == 2:
+        if self.rot == 2:
             return self.map[self.y-1][self.x+1][self.z]
-        if rot == 3:
+        if self.rot == 3:
             return self.map[self.y-1][self.x][self.z+1]
-        if rot == 4:
+        if self.rot == 4:
             return self.map[self.y][self.x-1][self.z+1]
-        if rot == 5:
+        if self.rot == 5:
             return self.map[self.y+1][self.x-1][self.z]
         
-    def forward(self, dist): # what if cell = undef??
+    def forward(self, dist):  # what if cell = undef??
         for i in range(dist):
-            if rot == 0:
-                next = self.map[self.y+1][self.x][self.z-1]
-                if next.type.type in ['box', 'wall']:
+            if self.rot == 0:
+                _next = self.map[self.y+1][self.x][self.z-1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.y += 1
                 self.z -= 1
-            elif rot == 1:
-                next = self.map[self.y][self.x+1][self.z-1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 1:
+                _next = self.map[self.y][self.x+1][self.z-1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.x += 1
                 self.z -= 1
-            elif rot == 2:
-                next = self.map[self.y-1][self.x+1][self.z]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 2:
+                _next = self.map[self.y-1][self.x+1][self.z]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.x += 1
                 self.y -= 1
-            elif rot == 3:
-                next = self.map[self.y-1][self.x][self.z+1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 3:
+                _next = self.map[self.y-1][self.x][self.z+1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.z += 1
                 self.y -= 1
-            elif rot == 4:
-                next = self.map[self.y][self.x-1][self.z+1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 4:
+                _next = self.map[self.y][self.x-1][self.z+1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.z += 1
                 self.x -= 1
-            elif rot == 5:
-                next = self.map[self.y+1][self.x-1][self.z]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 5:
+                _next = self.map[self.y+1][self.x-1][self.z]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.y += 1
                 self.x -= 1
                     
-    def backward(self, dict):
+    def backward(self, dist):
         for i in range(dist):
-            if rot == 0:
-                next = self.map[self.y-1][self.x][self.z+1]
-                if next.type.type in ['box', 'wall']:
+            if self.rot == 0:
+                _next = self.map[self.y-1][self.x][self.z+1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.y -= 1
                 self.z += 1
-            elif rot == 1:
-                next = self.map[self.y][self.x-1][self.z+1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 1:
+                _next = self.map[self.y][self.x-1][self.z+1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.x -= 1
                 self.z += 1
-            elif rot == 2:
-                next = self.map[self.y+1][self.x-1][self.z]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 2:
+                _next = self.map[self.y+1][self.x-1][self.z]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.x -= 1
                 self.y += 1
-            elif rot == 3:
-                next = self.map[self.y+1][self.x][self.z-1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 3:
+                _next = self.map[self.y+1][self.x][self.z-1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.z -= 1
                 self.y += 1
-            elif rot == 4:
-                next = self.map[self.y][self.x+1][self.z-1]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 4:
+                _next = self.map[self.y][self.x+1][self.z-1]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.z -= 1
                 self.x += 1
-            elif rot == 5:
-                next = self.map[self.y-1][self.x+1][self.z]
-                if next.type.type in ['box', 'wall']:
+            elif self.rot == 5:
+                _next = self.map[self.y-1][self.x+1][self.z]
+                if _next.type.type in ['box', 'wall']:
                     return
                 self.y -= 1
                 self.x += 1
@@ -149,19 +150,18 @@ Capacity: {self.sum()}/{self.capacity}'''
     
     def right(self):
         if self.sum() < self.capacity:
-            self.to = (2 * self.rot - 1) % 6
+            self.rot = (2 * self.rot - 1) % 6
         
     def load(self, expr):
-        if self.next.type.type != 'box':
+        if self.next().type.type != 'box':
             return Var('bool', 'undef')
         if expr > len(self.slots):
             self.slots += [None for _ in range(expr-len(self.slots)+1)]
-            self.slots[expr] = self.next.type
+            self.slots[expr] = self.next().type
             return Var('bool', 'true')
         elif self.slots[expr]:
             return Var('bool', 'false')
-        
-        
+
     def drop(self, expr):
         if self.next.type.type == 'empty' and self.slots[expr]:
             self.next.type = self.slots[expr]
@@ -181,22 +181,22 @@ Capacity: {self.sum()}/{self.capacity}'''
             i += 1
             if self.map[x][y][z].type.type in ['box', 'wall']:
                 return Var('int', i)
-            if rot == 0:
+            if self.rot == 0:
                 y += 1
                 z -= 1
-            elif rot == 1:
+            elif self.rot == 1:
                 x += 1
                 z -= 1
-            elif rot == 2:
+            elif self.rot == 2:
                 x += 1
                 y -= 1
-            elif rot == 3:
+            elif self.rot == 3:
                 z += 1
                 y -= 1
-            elif rot == 4:
+            elif self.rot == 4:
                 z += 1
                 x -= 1
-            elif rot == 5:
+            elif self.rot == 5:
                 y += 1
                 x -= 1
         
@@ -209,39 +209,37 @@ Capacity: {self.sum()}/{self.capacity}'''
             i += 1
             if self.map[x][y][z].type.type in ['box', 'wall']:
                 return Var('cell', self.map[x][y][z].type.type)
-            if rot == 0:
+            if self.rot == 0:
                 y += 1
                 z -= 1
-            elif rot == 1:
+            elif self.rot == 1:
                 x += 1
                 z -= 1
-            elif rot == 2:
+            elif self.rot == 2:
                 x += 1
                 y -= 1
-            elif rot == 3:
+            elif self.rot == 3:
                 z += 1
                 y -= 1
-            elif rot == 4:
+            elif self.rot == 4:
                 z += 1
                 x -= 1
-            elif rot == 5:
+            elif self.rot == 5:
                 y += 1
                 x -= 1
                 
-                
-                        
 
 class Var:
-    def __init__(self, symtype='var', symvalue=None):
+    def __init__(self, symtype='var', value=None):
         self.type = symtype
-        self.value = symvalue
+        self.value = value
         
     def __repr__(self):
         return f'{self.type}, {self.value}'
 
 
 class RedeclarationError(Exception):
-    """Exception for redeclared variables"""
+    """Exception for re-declared variables"""
     pass
 
 
@@ -260,9 +258,6 @@ class StopExecution(Exception):
     pass
 
 
-
-
-
 class Cell:
     def __init__(self, x, y, z, type_):
         self.x = x
@@ -271,7 +266,8 @@ class Cell:
         self.type = type_
         
     def __repr__(self):
-        return f'{self.x} {self.y} {self.z} : {self.type_}'
+        return f'{self.x} {self.y} {self.z} : {self.type}'
+
 
 class CellType:
     type = 'cell'
@@ -282,6 +278,7 @@ class CellType:
     def __repr__(self):
         return self.type
 
+
 class Empty(CellType):
     type = 'empty'
 
@@ -290,13 +287,14 @@ class Wall(CellType):
     type = 'wall'
 
 
-        
 class Undef(CellType):
     type = 'undef'
-    
-    def __init__(self):
-        pass
-    
+
+
+class Exit(CellType):
+    type = 'exit'
+
+
 class Box:
     type = 'box'
     
@@ -305,15 +303,8 @@ class Box:
         
     def __repr__(self):
         return f'box, weight: {self.weight}'
-    
-class Exit:
-    type = 'exit'
-    
-    def __init__(self):
-        pass
 
-    
-    
+
 class CastManager:
     def __init__(self):
         pass
@@ -327,23 +318,23 @@ class CastManager:
             return var
         if type_ == 'bool':
             if var.type == 'int':
-                return int_to_bool(var)
+                return CastManager.int_to_bool(var)
             if var.type == 'cell':
-                return cell_to_bool(var)
+                return CastManager.cell_to_bool(var)
         if type_ == 'int':
             if var.type == 'bool':
-                return bool_to_int(var)
+                return CastManager.bool_to_int(var)
             if var.type == 'cell':
-                return cell_to_int(var)
+                return CastManager.cell_to_int(var)
         if type_ == 'cell':
             if var.type == 'bool':
-                return bool_to_cell(var)
+                return CastManager.bool_to_cell(var)
             if var.type == 'int':
-                return int_to_cell(var)
+                return CastManager.int_to_cell(var)
         else:
             raise ValueError('wrong type')
     
-    @staticmethod # TODO: return Var (SymTableItem) instance
+    @staticmethod
     def bool_to_int(value):
         if value.value == 'true':
             return Var('int', 1)
@@ -387,7 +378,7 @@ class CastManager:
             return Var('int', '-inf')
         elif value.value.type == 'undef':
             return Var('int', 'nan')
-        raise InterpretValueError
+        raise ValueError
             
     @staticmethod
     def int_to_cell(value):
@@ -433,22 +424,17 @@ class Interpreter:
         self.program = None
         self.sym_table = [dict()]
         self.scope = 0
-        self.Robot = None
+        self.robot = self.tree = self.funcs = None
         
-    def interpret(self, map_description, program):
+    def interpret(self, map_description, program):  # TODO: robot implementation
         self.map = map_description  # Three-dimensional array of Cell objects
         self.program = program  # Program code
-        self.robot: Robot = None  #implement it
-        try:
-            self.tree, self.funcs = self.parser.parse(program)
-        except:
-            self._error('gen')
-            return
-        if 'main' not in funcs.keys():
+        self.tree, self.funcs = self.parser.parse(program)
+        if 'main' not in self.funcs.keys():
             self._error('nomain')
             return
-        self._interpret_tree(tree)
-        self._interpret_tree(funcs['main'])
+        self._interpret_tree(self.tree)
+        self._interpret_tree(self.funcs['main'])
         
     def _interpret_tree(self, tree):
         pass
@@ -473,15 +459,6 @@ class Interpreter:
             return self._variable(node)
         elif node.type == 'indexing':
             return self._indexing(node)
-            expr = self._interpret_node(node.children)
-            try:
-                ret = self.sym_table[node.value][expr]
-                return ret
-            except KeyError:
-                self._error(self.errors['undeclared'], node)
-            except IndexError:
-                self._error(self.error['index_error'], node)
-            return
         elif node.type == 'const':
             return self._const(node.value)
         elif node.type == 'un_op':
@@ -512,7 +489,7 @@ class Interpreter:
             elif node.value.lower() == 'left':
                 self._left()
             elif node.value.lower() == 'right':
-                self.right()
+                self._right()
             elif node.value.lower() == 'load':
                 return self._load(node.children)
             elif node.value.lower() == 'drop':
@@ -535,12 +512,11 @@ class Interpreter:
             pass
         
     def _return(self, node):
-        if not self.scope_depth:
+        if not self.scope:
             self._error('return', node)
         else:
             raise StopExecution
-            
-        
+
     def _variable(self, node):
         var = node.value
         if var not in self.sym_table[self.scope].keys():
@@ -609,33 +585,37 @@ class Interpreter:
         self._interpret_node(node.children['body'])
         self.scope -= 1
         self.sym_table.pop()
-        
+
+    def _find_var(self, expr):
+        if expr in self.sym_table[0].keys():
+            return self.sym_table[0][expr]
+        if expr in self.sym_table[self.scope].keys():
+            return self.sym_table[self.scope][expr]
+        raise KeyError
         
     def _sizeof(self, node):
         expr = self._interpret_node(node)
-        if expr not in self.sym_table.keys():
-            self._error(errors['value'], node)
-            return
-        if isinstance(self.sym_table[expr].value, list):
-            return Var('int', len(self.sym_table[expr].value))
-        else:
-            return Var('int', 1)
+        try:
+            var = self._find_var(expr)
+            return Var('int', len(var.value)) if isinstance(var.value, list) else Var('int', 1)
+        except KeyError:
+            self._error('undeclared', node)
         
-    ### ROBOT OPERATORS ###
+    # ROBOT OPERATORS #
     
     def _forward(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
             self.robot.forward(expr)
         except CastError:
-            self._error(errors['cast'], node)
+            self._error('cast', node)
     
     def _backward(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
             self.robot.backward(expr)
         except CastError:
-            self._error(errors['cast'], node)
+            self._error('cast', node)
             
     def _left(self):
         self.robot.left()
@@ -648,14 +628,14 @@ class Interpreter:
             expr = self.cast.cast('int', self._interpret_node(node))
             return self.robot.load(expr)
         except CastError:
-            self._error(errors['cast'], node)
+            self._error('cast', node)
         
     def _drop(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
             return self.robot.drop(expr)
         except CastError:
-            self._error(errors['cast'], node)  
+            self._error('cast', node)
             
     def _look(self):
         return self.robot.look()
@@ -663,7 +643,7 @@ class Interpreter:
     def _test(self):
         return self.robot.test()
     
-    ### ARITHMETICAL AND LOGICAL OPERATORS ###
+    # ARITHMETICAL AND LOGICAL OPERATORS #
     
     def _negative(self, node):
         expr = self._interpret_node(node)
@@ -707,7 +687,7 @@ class Interpreter:
         expr2 = self.cast.cast('int', self._interpret_node(op2))
         return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
     
-    ### VARIABLES STATEMENTS ###
+    # VARIABLES STATEMENTS #
         
     def _const(self, value):
         if value.isdigit():
@@ -723,7 +703,7 @@ class Interpreter:
             try:
                 self._create_new_var(node.type, node.value)
             except RedeclarationError:
-                self._error(errors['redeclaration'], node)
+                self._error('redecl', node)
         if node.type == 'assignment':
             # self._create_new_var(_type, node.value)
             variable = node.children[0]
@@ -732,9 +712,9 @@ class Interpreter:
                 try:
                     self._assign(_type, variable, expr)
                 except CastError:
-                    self._error(errors['cast'], node)
+                    self._error('cast', node)
                 except ValueError:
-                    self._error(errors['value'], node)
+                    self._error('value', node)
             else:
                 nodearr = self._array(node.chilren[1])
                 arr = [self._interpret_node(i) for i in nodearr]
@@ -756,7 +736,7 @@ class Interpreter:
         else:
             self._assign_array(_type, variable, expr)
     
-    def _assign_array(_type, variable, arr):
+    def _assign_array(self, _type, variable, arr):
         if _type != 'var':
             cast_arr = [self.cast.cast(_type, a) for a in arr]
             self.sym_table[self.scope][variable] = cast_arr
@@ -777,14 +757,11 @@ class Interpreter:
                     for child in node.children:
                         self._array_from_tree(child, ret)
                 else:
-                    self._array_from_tree(child, ret)
+                    self._array_from_tree(node.children, ret)
             else:
                 ret.append(node)
-            
-            
-            
-        
-    def _error(self, err_type, node):
+
+    def _error(self, err_type, node=None):
         sys.stderr.write(f'Error {err_type}: ')
         if err_type == 1:
             sys.stderr.write(f'no main function\n')
@@ -801,4 +778,3 @@ class Interpreter:
             sys.stderr.write(f'failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
         elif err_type == 7:
             sys.stderr.write(f'incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
-    
