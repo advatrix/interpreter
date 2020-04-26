@@ -38,71 +38,71 @@ class Lexer():
         return t
     
     def t_HEXADECIMAL(self, t):
-        r'(?i)[A-F0-9]*h+(?!\w)'
+        r'[A-F0-9]*h+(?!\w)'
         return t
     
     def t_SIZEOF(self, t):
-        r'(?i)sizeof(?!\w)'
+        r'sizeof(?!\w)'
         return t
     
     def t_INF(self, t):
-        r'(?i)inf(?!\w)'
+        r'inf(?!\w)'
         return t
     
     def t_MINUS_INF(self, t):
-        r'(?i)-inf(?!\w)'
+        r'-inf(?!\w)'
         return t
     
     def t_NAN(self, t):
-        r'(?i)nan(?!\w)'
+        r'nan(?!\w)'
         return t
     
     def t_BOOL(self, t):
-        r'(?i)bool(?!\w)'
+        r'bool(?!\w)'
         return t
     
     def t_FUNCTION(self, t):
-        r'(?i)function(?!\w)'
+        r'function(?!\w)'
         return t
     
     def t_FINISH(self, t):
-        r'(?i)finish(?!\w)'
+        r'finish(?!\w)'
         return t
     
     def t_TRUE(self, t):
-        r'(?i)(true|t)(?!\w)'
+        r'(true|t)(?!\w)'
         return t
     
     def t_FALSE(self, t):
-        r'(?i)(false|f)(?!\w)'
+        r'(false|f)(?!\w)'
         return t
     
     def t_UNDEF(self, t):
-        r'(?i)(undef|u)(?!\w)'
+        r'(undef|u)(?!\w)'
         return t
     
     def t_CELL(self, t):
-        r'(?i)cell(?!\w)'
+        r'cell(?!\w)'
         return t
     
     def t_EMPTY(self, t):
-        r'(?i)empty(?!\w)'
+        r'empty(?!\w)'
         return t
     
     def t_WALL(self, t):
-        r'(?i)wall(?!\w)'
+        r'wall(?!\w)'
         return t
     
     def t_BOX(self, t):
-        r'(?i)box(?!\w)'
+        r'box(?!\w)'
         return t
     
     def t_EXIT(self, t):
-        r'(?i)exit(?!\w)'
+        r'exit(?!\w)'
         return t
     
     def t_VAR(self, t):
-        r'(?i)var(?!\w)'
+        r'var(?!\w)'
         return t
     
     def t_OBRACKET(self, t):
@@ -154,71 +154,71 @@ class Lexer():
         return t
     
     def t_WHILE(self, t):
-        r'(?i)while(?!\w)'
+        r'while(?!\w)'
         return t
     
     def t_DONE(self, t):
-        r'(?i)done(?!\w)'
+        r'done(?!\w)'
         return t
     
     def t_DO(self, t):
-        r'(?i)do(?!\w)'
+        r'do(?!\w)'
         return t
     
     def t_IF(self, t):
-        r'(?i)if(?!\w)'
+        r'if(?!\w)'
         return t
     
     def t_ELDEF(self, t):
-        r'(?i)eldef(?!\w)'
+        r'eldef(?!\w)'
         return t
     
     def t_ELUND(self, t):
-        r'(?i)elund(?!\w)'
+        r'elund(?!\w)'
         return t
     
     def t_FORWARD(self, t):
-        r'(?i)forward(?!\w)'
+        r'forward(?!\w)'
         return t
     
     def t_BACKWARD(self, t):
-        r'(?i)backward(?!\w)'
+        r'backward(?!\w)'
         return t
     
     def t_LEFT(self, t):
-        r'(?i)left(?!\w)'
+        r'left(?!\w)'
         return t
     
     def t_RIGHT(self, t):
-        r'(?i)right(?!\w)'
+        r'right(?!\w)'
         return t
     
     def t_LOAD(self, t):
-        r'(?i)load(?!\w)'
+        r'load(?!\w)'
         return t
     
     def t_DROP(self, t):
-        r'(?i)drop(?!\w)'
+        r'drop(?!\w)'
         return t
     
     def t_LOOK(self, t):
-        r'(?i)look(?!\w)'
+        r'look(?!\w)'
         return t
     
     def t_TEST(self, t):
-        r'(?i)test(?!\w)'
+        r'test(?!\w)'
         return t
     
     def t_RETURN(self, t):
-        r'(?i)return(?!\w)'
+        r'return(?!\w)'
         return t
     
     def t_INT(self, t):
-        r'(?i)int(?!\w)'
+        r'int(?!\w)'
         return t      
     
     def t_IDENT(self, t):
-        r'(?i)[a-z_][a-z0-9_]*'
+        r'[a-z_][a-z0-9_]*'
         return t
          
     def t_NL(self, t):
@@ -230,6 +230,7 @@ class Lexer():
         sys.stderr.write(f'Illegal character: "{t.value}" at line {t.lexer.lineno}\n')
         t.lexer.skip(len(t.value))
         t.lexer.begin('INITIAL')
+        
     
     def token(self):
         return self.lexer.token()
@@ -244,7 +245,3 @@ if __name__ == '__main__':
                 print(tok)
     except EOFError:
         pass
-
-    
-    
-    
