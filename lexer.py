@@ -38,7 +38,7 @@ class Lexer():
         return t
     
     def t_HEXADECIMAL(self, t):
-        r'[A-F0-9]*h+(?!\w)'
+        r'[A-F0-9]*h(?!\w)'
         return t
     
     def t_SIZEOF(self, t):

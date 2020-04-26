@@ -2,40 +2,40 @@
 
 
 # TODO: error handling refactoring
+# TODO: chain expr order
 # map description
 # robot loading
 
 from __future__ import annotations
 import sys
 import parser
+import random
 from typing import List
 
 
 class Robot:
     def __init__(self, x, y, z, rot, capacity, map_):
-        """ Rotation:
-          -1 <-- -->+1
-           --------
-          /   0    \   
-         /5        1\
-        /            \ 
-        \            /
-         \4        2/
-          \   3    /
-           --------
-
-           Coordinates:
-           ^ X  ^ Y
-           |   /
-           |  /
-           | /
-           |/
-           /\
-             \
-              V Z
-
-
-        """ 
+        # Rotation:
+        #  -1 <-- -->+1
+        #   --------
+        #  /   0    \
+        # /5        1\
+        #/            \
+        #\            /
+        # \4        2/
+        #  \   3    /
+        #   --------
+        #
+        #   Coordinates:
+        #   ^ X  ^ Y
+        #   |   /
+        #   |  /
+        #   | /
+        #   |/
+        #   /\
+        #     \
+        #      V Z
+        #
         self.x = x
         self.y = y
         self.z = z
@@ -341,7 +341,7 @@ class CastManager:
         elif value.value == 'false':
             return Var('int', 0)
         elif value.value == 'undef':
-            return Var('int', 'undef')
+            return Var('int', 'nan')
         raise ValueError
         
     @staticmethod
@@ -510,7 +510,23 @@ class Interpreter:
             return self._unnamed_function(node)
         elif node.type == 'function_description':
             pass
-        
+        elif node.type == 'assignment':
+            self._assignment(node)
+
+    def _assignment(self, node: parser.SyntaxTreeNode):
+        var = self._interpret_node(node.children[0])
+        expr = self._interpret_node(node.children[1])
+        if var.type in ['var', expr.type]:
+            var.value = expr.value
+            if var.type == 'var':
+                var.type = expr.type
+        else:
+            try:
+                casted_expr = self.cast.cast(var.type, expr)
+                var.value = casted_expr.value
+            except CastError:
+                self._error('cast', node)
+
     def _return(self, node):
         if not self.scope:
             self._error('return', node)
@@ -528,12 +544,12 @@ class Interpreter:
         try:
             var = node.value
             index = self.cast.cast('int', self._interpret_node(node.children))
-            if index == len(self.sym_table[self.scope][var]):
-                self.sym_table[self.scope][var].append(Var())
-            elif index > len(self.sym_table[self.scope][var]):
+            if index.value == len(self.sym_table[self.scope][var].value):
+                self.sym_table[self.scope][var].value.append(Var())
+            elif index.value > len(self.sym_table[self.scope][var].value):
                 self._error('index', node)
                 return
-            return self.sym_table[self.scope][var][index]
+            return self.sym_table[self.scope][var].value[index.value]
         except ValueError:
             self._error('value', node)
         except CastError:
@@ -647,7 +663,11 @@ class Interpreter:
     
     def _negative(self, node):
         expr = self._interpret_node(node)
-        return (-1) * self.cast.cast('int', expr)
+        try:
+            casted_expr = self.cast.cast('int', expr)
+            return Var('int', casted_expr.value * (-1))
+        except CastError:
+            self._error('cast', node)
     
     def _sum(self, node):
         expr = self._interpret_node(node)
@@ -655,95 +675,155 @@ class Interpreter:
             return sum([self.cast.cast('int', a) for a in expr])
         return self.cast.cast('int', expr)
     
-    def _plus(self, op1, op2):
+    def _plus(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
+        if 'nan' in [expr1.value, expr2.value] \
+                or (expr1.value in ['inf', '-inf'] and expr2.value in ['inf', '-inf']):
+            return Var('int', 'nan')
+        if expr1.value == 'inf' or expr2.value == 'inf':
+            return Var('int', 'inf')
+        if expr1.value == '-inf' or expr2.value == '-inf':
+            return Var('int', '-inf')
         return Var('int', expr1.value + expr2.value)
     
-    def _minus(self, op1, op2):
+    def _minus(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
+        if 'nan' in [expr1.value, expr2.value] \
+                or (expr1.value in ['inf', '-inf'] and expr2.value in ['inf', '-inf']):
+            return Var('int', 'nan')
+        if expr1.value == 'inf' or expr2.value == '-inf':
+            return Var('int', 'inf')
+        if expr1.value == '-inf' or expr2.value == 'inf':
+            return Var('int', '-inf')
         return Var('int', expr1.value - expr2.value)
     
-    def _xor(self, op1, op2):
+    def _xor(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('bool', self._interpret_node(op1))
         expr2 = self.cast.cast('bool', self._interpret_node(op2))
         if expr1.value in ['true', 'false'] and expr2.value in ['true', 'false'] and expr1.value != expr2.value:
             return Var('bool', 'true')
         return Var('bool', 'false')
     
-    def _gr(self, op1, op2):
+    def _gr(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
+        if expr1.value == 'inf' and expr1.value == '-inf':
+            return Var('bool', 'true')
+        if expr1.value == '-inf' and expr2.value == 'inf':
+            return Var('bool', 'false')
+        if expr1.value == 'nan' or expr2.value == 'nan':
+            return Var('bool', 'undef')
+        if expr1.value == expr2.value:
+            return Var('bool', 'false')
         return Var('bool', 'true') if expr1.value > expr2.value else Var('bool', 'false')
     
-    def _ls(self, op1, op2):
+    def _ls(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
+        if expr1.value == 'inf' and expr1.value == '-inf':
+            return Var('bool', 'false')
+        if expr1.value == '-inf' and expr2.value == 'inf':
+            return Var('bool', 'true')
+        if expr1.value == 'nan' or expr2.value == 'nan':
+            return Var('bool', 'undef')
+        if expr1.value == expr2.value:
+            return Var('bool', 'false')
         return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
     
-    def _eq(self, op1, op2):
-        expr1 = self.cast.cast('int', self._interpret_node(op1))
-        expr2 = self.cast.cast('int', self._interpret_node(op2))
-        return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
+    def _eq(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode):
+        expr1 = self._interpret_node(op1)
+        expr2 = self.cast.cast(expr1.type, self._interpret_node(op2))
+        if expr1.value == 'nan' or expr2.value == 'nan':
+            return Var('bool', 'undef')
+        return Var('bool', 'true') if expr1.value == expr2.value else Var('bool', 'false')
     
     # VARIABLES STATEMENTS #
         
     def _const(self, value):
         if value.isdigit():
             return Var('int', int(value))
+        elif value == 'inf':
+            return Var('int', 'inf')
+        elif value == '-inf':
+            return Var('int', '-inf')
+        elif value == 'nan':
+            return Var('int', 'nan')
+        elif value in ['t', 'true']:
+            return Var('bool', 'true')
+        elif value in ['f', 'false']:
+            return Var('bool', 'false')
+        elif value in ['u', 'undef']:
+            return Var('bool', 'undef')
+        elif value == 'empty':
+            return Var('cell', Empty())
+        elif value == 'wall':
+            return Var('cell', Wall())
+        elif value == 'box':
+            return Var('cell', Box(random.randint(0, 100)))
+        elif value == 'exit':
+            return Var('cell', Exit())
         else:
-            return Var('int', int(value, 16))
+            return Var('int', int(value[:-1], 16))
                                 
-    def _declaration(self, node, _type):
+    def _declaration(self, node: parser.SyntaxTreeNode, _type: parser.SyntaxTreeNode):
         if node.type == 'vars_list':
             for child in node.children:
                 self._declaration(child, _type)
         else:
             try:
-                self._create_new_var(node.type, node.value)
+                if node.type == 'assignment':
+                    self._create_new_var(_type.value, node.children[0].value)
+                else:
+                    self._create_new_var(_type.value, node.value)
             except RedeclarationError:
                 self._error('redecl', node)
+                return
         if node.type == 'assignment':
             # self._create_new_var(_type, node.value)
-            variable = node.children[0]
+            variable = node.children[0].value
             if node.children[1].type != 'array':
                 expr = self._interpret_node(node.children[1])
                 try:
-                    self._assign(_type, variable, expr)
+                    self._assign(_type.value, variable, expr)
                 except CastError:
                     self._error('cast', node)
                 except ValueError:
                     self._error('value', node)
             else:
-                nodearr = self._array(node.chilren[1])
+                nodearr = self._array(node.children[1])
                 arr = [self._interpret_node(i) for i in nodearr]
-                self._assign_array(_type, variable, arr)
+                self._assign_array(_type.value, variable, arr)
                 
-    def _create_new_var(self, _type, name):
+    def _create_new_var(self, _type, name: str):
         if name in self.sym_table[self.scope].keys():
             raise RedeclarationError
         self.sym_table[self.scope][name] = Var(_type, None)
                 
-    def _assign(self, _type, variable, expr: Var):
+    def _assign(self, _type: str, variable: Var, expr: Var):
+        scope = self.scope
         if variable not in self.sym_table[self.scope].keys():
-            raise NameError
+            if variable not in self.sym_table[0].keys():
+                raise NameError
+            else:
+                scope = 0
         if _type in [expr.type, 'var']:
-            self.sym_table[self.scope][variable] = expr
+            self.sym_table[scope][variable] = expr
         elif not isinstance(expr.value, list):
             casted_value = self.cast.cast(_type, expr)
-            self.sym_table[self.scope][variable] = casted_value
+            self.sym_table[scope][variable] = casted_value
         else:
             self._assign_array(_type, variable, expr)
     
-    def _assign_array(self, _type, variable, arr):
+    def _assign_array(self, _type: str, variable, arr):
         if _type != 'var':
             cast_arr = [self.cast.cast(_type, a) for a in arr]
-            self.sym_table[self.scope][variable] = cast_arr
+            self.sym_table[self.scope][variable] = Var(_type, cast_arr)
         else:
             prob_type = arr[0].type
             cast_arr = [self.cast.cast(prob_type, a) for a in arr]
-            self.sym_table[self.scope][variable] = cast_arr
+            self.sym_table[self.scope][variable] = Var(_type, cast_arr)
             
     def _array(self, node) -> list:
         ret = []

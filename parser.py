@@ -74,6 +74,7 @@ class Parser:
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, debug=False)
         self._functions: Dict[str, SyntaxTreeNode] = dict()
+        self.acc = None
         
     def parse(self, s) -> Tuple[SyntaxTreeNode, Dict]:
         try:
@@ -81,6 +82,11 @@ class Parser:
             return res, self._functions
         except LexError:
             sys.stderr.write(f'Illegal token {s}\n')
+
+    def check_program(self, prog):
+        self.acc = True
+        self.parser.parse(prog)
+        return self.acc
             
     def p_program(self, p):
         'program : stmt_list'
@@ -135,12 +141,14 @@ class Parser:
         
     def p_type_error(self, p):
         'type : err_list'
+        self.acc = False
         sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
         p[0] = SyntaxTreeNode('error')
         
     def p_err_list(self, p):
         '''err_list : err_list error
         | error'''
+        self.acc = False
         if len(p) == 2:
             p[0] = [p[1]]
         else:
@@ -316,6 +324,3 @@ if __name__ == '__main__':
     else:
         print('no tree built')
     # print(funcs)
-
-        
-    
