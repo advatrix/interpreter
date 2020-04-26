@@ -1,28 +1,29 @@
 #! usr/bin/env python
 
 
-# TODO: error handling refactoring
+# TODO: substitute var searches by _find_var()
+# TODO:
 # map description
 # robot loading
 
 from __future__ import annotations
 import sys
 import parser
-from typing import List
+from typing import List, Tuple, Optional
 
 
 class Robot:
     def __init__(self, x, y, z, rot, capacity, map_):
         """ Rotation:
-          -1 <-- -->+1
-           --------
-          /   0    \   
-         /5        1\
-        /            \ 
-        \            /
-         \4        2/
-          \   3    /
-           --------
+              -1 <-- -->+1
+               --------
+              /   0    \
+             /5        1\
+            /            \ 
+            \            /
+             \4        2/
+              \   3    /
+               --------
 
            Coordinates:
            ^ X  ^ Y
@@ -411,14 +412,14 @@ class Interpreter:
     
     """
        
-    def __init__(self, parser=parser.Parser(), caster=CastManager()):
+    def __init__(self, parser_=parser.Parser(), caster=CastManager()):
         """
         Object fields:
         self.sym_table -- scoped symbol table: array of symbol tables,
             first index -- scope depth (used in function calls since functions are isolated scopes), 0 by default
             second index -- symbol name as a key in 'symbol table' dict
         """
-        self.parser = parser
+        self.parser = parser_
         self.cast = caster
         self.map = None
         self.program = None
@@ -518,28 +519,28 @@ class Interpreter:
             raise StopExecution
 
     def _variable(self, node):
-        var = node.value
-        if var not in self.sym_table[self.scope].keys():
-            self._error('name', node)
-            return
-        return self.sym_table[self.scope][var]
-    
+        ret = self._find_var(node.value)
+        if ret:
+            return ret[0]
+        self._error('name', node)
+
     def _indexing(self, node):
         try:
-            var = node.value
+            var = self._find_var(node.value)
+            if not var:
+                self._error('name', node)
+                return
             index = self.cast.cast('int', self._interpret_node(node.children))
-            if index == len(self.sym_table[self.scope][var]):
-                self.sym_table[self.scope][var].append(Var())
-            elif index > len(self.sym_table[self.scope][var]):
+            if index == len(var[0].value):
+                var[0].value.append(Var())
+            elif index > len(var[0].value):
                 self._error('index', node)
                 return
-            return self.sym_table[self.scope][var][index]
+            return var[0].value[index]
         except ValueError:
             self._error('value', node)
         except CastError:
             self._error('cast', node)
-        except NameError:
-            self._error('name', node)  
         
     def _function_call(self, node):
         param = self._interpret_node(node.children)
@@ -586,12 +587,12 @@ class Interpreter:
         self.scope -= 1
         self.sym_table.pop()
 
-    def _find_var(self, expr):
+    def _find_var(self, expr: str) -> Optional[Tuple[Var, int]]:
         if expr in self.sym_table[0].keys():
-            return self.sym_table[0][expr]
+            return self.sym_table[0][expr], 0
         if expr in self.sym_table[self.scope].keys():
-            return self.sym_table[self.scope][expr]
-        raise KeyError
+            return self.sym_table[self.scope][expr], self.scope
+        return None
         
     def _sizeof(self, node):
         expr = self._interpret_node(node)
@@ -726,17 +727,22 @@ class Interpreter:
         self.sym_table[self.scope][name] = Var(_type, None)
                 
     def _assign(self, _type, variable, expr: Var):
+        scope = self.scope
         if variable not in self.sym_table[self.scope].keys():
-            raise NameError
+            if variable not in self.sym_table[0].keys():
+                raise NameError
+            else:
+                scope = 0
         if _type in [expr.type, 'var']:
-            self.sym_table[self.scope][variable] = expr
+            self.sym_table[scope][variable] = expr
         elif not isinstance(expr.value, list):
             casted_value = self.cast.cast(_type, expr)
-            self.sym_table[self.scope][variable] = casted_value
+            self.sym_table[scope][variable] = casted_value
         else:
             self._assign_array(_type, variable, expr)
     
     def _assign_array(self, _type, variable, arr):
+
         if _type != 'var':
             cast_arr = [self.cast.cast(_type, a) for a in arr]
             self.sym_table[self.scope][variable] = cast_arr
