@@ -1,2 +1,2 @@
 # Interpreter
-Interpreter for a simple programming language
+A simple programming language interpreter
