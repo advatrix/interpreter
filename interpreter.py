@@ -671,8 +671,8 @@ class Interpreter:
     
     def _sum(self, node):
         expr = self._interpret_node(node)
-        if isinstance(expr, list):
-            return sum([self.cast.cast('int', a) for a in expr])
+        if isinstance(expr.value, list):
+            return Var('int', sum([self.cast.cast('int', a).value for a in expr.value]))
         return self.cast.cast('int', expr)
     
     def _plus(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
@@ -702,6 +702,8 @@ class Interpreter:
     def _xor(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('bool', self._interpret_node(op1))
         expr2 = self.cast.cast('bool', self._interpret_node(op2))
+        if expr1.value == 'undef' or expr2.value == 'undef':
+            return Var('bool', 'undef')
         if expr1.value in ['true', 'false'] and expr2.value in ['true', 'false'] and expr1.value != expr2.value:
             return Var('bool', 'true')
         return Var('bool', 'false')
@@ -709,12 +711,18 @@ class Interpreter:
     def _gr(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
-        if expr1.value == 'inf' and expr1.value == '-inf':
+        '''if expr1.value == 'inf' and expr1.value == '-inf':
             return Var('bool', 'true')
         if expr1.value == '-inf' and expr2.value == 'inf':
-            return Var('bool', 'false')
+            return Var('bool', 'false')'''
         if expr1.value == 'nan' or expr2.value == 'nan':
             return Var('bool', 'undef')
+        if expr1.value == expr2.value and expr1.value in ['inf', '-inf']:
+            return Var('bool', 'undef')
+        if expr1.value == 'inf' or expr2.value == '-inf':
+            return Var('bool', 'true')
+        if expr1.value == '-inf' or expr2.value == 'inf':
+            return Var('bool', 'false')
         if expr1.value == expr2.value:
             return Var('bool', 'false')
         return Var('bool', 'true') if expr1.value > expr2.value else Var('bool', 'false')
@@ -722,17 +730,19 @@ class Interpreter:
     def _ls(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
-        if expr1.value == 'inf' and expr1.value == '-inf':
-            return Var('bool', 'false')
-        if expr1.value == '-inf' and expr2.value == 'inf':
-            return Var('bool', 'true')
         if expr1.value == 'nan' or expr2.value == 'nan':
             return Var('bool', 'undef')
+        if expr1.value == expr2.value and expr1.value in ['inf', '-inf']:
+            return Var('bool', 'undef')
+        if expr1.value == 'inf' or expr2.value == '-inf':
+            return Var('bool', 'false')
+        if expr1.value == '-inf' or expr2.value == 'inf':
+            return Var('bool', 'true')
         if expr1.value == expr2.value:
             return Var('bool', 'false')
         return Var('bool', 'true') if expr1.value < expr2.value else Var('bool', 'false')
     
-    def _eq(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode):
+    def _eq(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self._interpret_node(op1)
         expr2 = self.cast.cast(expr1.type, self._interpret_node(op2))
         if expr1.value == 'nan' or expr2.value == 'nan':

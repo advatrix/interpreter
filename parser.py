@@ -70,6 +70,10 @@ class SyntaxTreeNode:
 class Parser:
     tokens = Lexer.tokens
 
+    precedence = (
+        ('left', 'PLUS', 'MINUS'),
+    )
+
     def __init__(self):
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, debug=False)
