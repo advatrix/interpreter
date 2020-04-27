@@ -141,8 +141,40 @@ def test_hexadecimal_expr():
     assert intr.sym_table[0]['a'].value == 258
 
 
-def test_chain_operators():
+def test_chain_expr_1():
     intr = interpreter.Interpreter()
     tree, _ = intr.parser.parse('int a := ffh + 3 + t - 258\n')
     intr._interpret_node(tree)
     assert intr.sym_table[0]['a'].value == 1
+
+
+def test_chain_expr_2():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int a := 2 - 2 + 2\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 2
+
+
+def test_un_minus():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int a := -5\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == -5
+    assert intr.sym_table[0]['a'].type == 'int'
+
+
+def test_chain_un_minus():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int a :=2 + -5 - 4 + 7 - -3\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 3
+    assert intr.sym_table[0]['a'].type == 'int'
+
+
+def test_sum():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int a:= [1, 2]\nint b := #a\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['b'].value == 3
+    assert intr.sym_table[0]['b'].type == 'int'
+
