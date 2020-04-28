@@ -294,7 +294,7 @@ class Parser:
         '''function : FUNCTION IDENT OBRACKET IDENT CBRACKET DO NL stmt_list DONE'''
         self._functions[p[2]] = SyntaxTreeNode(
             'function',
-            children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)),'body': p[8]},
+            children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)), 'body': p[8]},
             lineno=p.lineno(1),
             lexpos=p.lexpos(1)
         )

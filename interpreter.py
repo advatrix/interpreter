@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 import parser
 import random
-from typing import List
+from typing import List, NamedTuple, Optional
 
 
 class Robot:
@@ -403,7 +403,7 @@ class Interpreter:
     ERRORS:
     (1) - 'nomain' - no main function (no entry point in code)
     (2) - 'redecl' - redeclaration of a variable
-    (3) - 'undecl' - undeclared variable usage
+    (3) - 'undecl' - undeclared variable usage -- TODO: delete this because it's not an error
     (4) - 'index' - IndexError
     (5) - 'unfunc' - undeclared function usage
     (6) - 'cast' - CastError
@@ -428,15 +428,23 @@ class Interpreter:
         self.scope = 0
         self.robot = self.tree = self.funcs = None
         
-    def interpret(self, map_description, program):  # TODO: robot implementation
+    def interpret(self, program, map_description=None, initial_conditions: Optional[NamedTuple]=None, robot_mode=False):
+        # TODO: robot implementation
         self.map = map_description  # Three-dimensional array of Cell objects
+        if robot_mode:
+            self.robot = Robot(initial_conditions[x],
+                               initial_conditions[y],
+                               initial_conditions[z],
+                               initial_conditions[rot],
+                               initial_conditions[capacity],
+                               map_description)
         self.program = program  # Program code
         self.tree, self.funcs = self.parser.parse(program)
         if 'main' not in self.funcs.keys():
             self._error('nomain')
             return
-        self._interpret_tree(self.tree)
-        self._interpret_tree(self.funcs['main'])
+        # self._interpret_node(self.tree)
+        self._interpret_node(self.funcs['main'].children['body'])
         
     def _interpret_tree(self, tree):
         pass
@@ -518,16 +526,8 @@ class Interpreter:
     def _assignment(self, node: parser.SyntaxTreeNode):
         var = self._interpret_node(node.children[0])
         expr = self._interpret_node(node.children[1])
-        if var.type in ['var', expr.type]:
-            var.value = expr.value
-            if var.type == 'var':
-                var.type = expr.type
-        else:
-            try:
-                casted_expr = self.cast.cast(var.type, expr)
-                var.value = casted_expr.value
-            except CastError:
-                self._error('cast', node)
+        var.type = expr.type
+        var.value = expr.value
 
     def _return(self, node):
         if not self.scope:
@@ -567,7 +567,7 @@ class Interpreter:
             return
         self.scope += 1
         self.sym_table.append(dict())
-        func_subtree = self.funcs[func] or self.sym_table[self.scope-1][func]
+        func_subtree = self.funcs[func] if func in self.funcs.keys() else self.sym_table[self.scope-1][func]
         self.sym_table[self.scope][func_subtree.children['param'].value] = param
         self._interpret_tree(func_subtree.children['body'])
         self.scope -= 1
