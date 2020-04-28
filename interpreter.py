@@ -1,7 +1,9 @@
 #! usr/bin/env python
 
 
-# TODO: error handling refactoring
+# TODO: error handling refactoring:
+# Interpreter should collect errors and return them afterwards
+
 # TODO: chain expr order
 # map description
 # robot loading

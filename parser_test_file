@@ -1,0 +1,29 @@
+if a do
+    test
+done
+eldef do
+    test
+done
+
+if a do
+    test
+done
+
+
+if a do
+    test
+done
+elund do
+    test
+done
+
+
+if a do
+    test
+done
+eldef do
+    test
+done
+elund do
+    test
+done

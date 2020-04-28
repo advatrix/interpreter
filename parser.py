@@ -69,11 +69,15 @@ class SyntaxTreeNode:
 
 class Parser:
     tokens = Lexer.tokens
-
+    
     precedence = (
+        ('nonassoc', 'IFX'),
+        ('nonassoc', 'IFY'),
+        ('nonassoc', 'ELUND'),
         ('left', 'PLUS', 'MINUS'),
+        ('nonassoc', 'GREATER', 'LESS', 'EQUAL'),
     )
-
+    
     def __init__(self):
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, debug=False)
@@ -112,7 +116,7 @@ class Parser:
         '''statement : declaration_list NL
         | assignment NL
         | while NL
-        | if NL
+        | if
         | operator NL
         | function NL
         | function_call NL
@@ -121,16 +125,7 @@ class Parser:
         '''
         p[0] = p[1]
         
-    def p_statement_error(self, p):
-        '''statement : err_list NL'''
-        sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
-        # p[0] = SyntaxTreeNode('error')
-        
-    def p_statement_error_no_nl(self, p):
-        'statement : err_list'
-        sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
-        # p[0] = SyntaxTreeNode('error')
-        
+    
     def p_declaration_list(self, p):
         'declaration_list : type vars_list'
         p[0] = SyntaxTreeNode('declaration_list', value=p[1], children=p[2])
@@ -143,20 +138,7 @@ class Parser:
         '''
         p[0] = SyntaxTreeNode('type', value=p[1], children=[], lineno=p.lineno(1), lexpos=p.lexpos(1))
         
-    def p_type_error(self, p):
-        'type : err_list'
-        self.acc = False
-        sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
-        p[0] = SyntaxTreeNode('error')
-        
-    def p_err_list(self, p):
-        '''err_list : err_list error
-        | error'''
-        self.acc = False
-        if len(p) == 2:
-            p[0] = [p[1]]
-        else:
-            p[0] = p[1] + p[2]
+    
         
     def p_vars_list_icv(self, p):
         'vars_list : IDENT COMMA vars_list'
@@ -265,27 +247,14 @@ class Parser:
         else:
             p[0] = SyntaxTreeNode('while', children={'condition': p[2], 'body': p[4], 'finish': p[6]},
                                   lineno=p.lineno(1), lexpos=p.lexpos(1))
-        
+
     def p_if(self, p):
-        '''if : IF expression DO stmt_list DONE 
-        | IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE
+        '''if : IF expression DO stmt_list DONE NL %prec IFX
+        | IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL %prec IFY
+        | IF expression DO stmt_list DONE NL ELUND DO stmt_list DONE NL %prec IFY
         | IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL ELUND DO stmt_list DONE
-        | IF expression DO stmt_list DONE NL ELUND DO stmt_list DONE'''
-        if len(p) == 6:
-            p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'eldef': None, 'elund': None},
-                                 lineno=p.lineno(1), lexpos=p.lexpos(1))
-        elif len(p) == 11:
-            if p[7].lower() == 'eldef':
-                p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'eldef': p[9], 'elund': None},
-                                     lineno=p.lineno(1), lexpos=p.lexpos(1))
-            else:
-                p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'eldef': None, 'elund': p[9]},
-                                     lineno=p.lineno(1), lexpos=p.lexpos(1))
-        else:
-            p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'eldef': p[9], 'elund': p[14]},
-                                 lineno=p.lineno(1), lexpos=p.lexpos(1))
-                                  
-        
+        '''
+    
     def p_function(self, p):
         '''function : FUNCTION OBRACKET IDENT CBRACKET DO stmt_list DONE 
         | FUNCTION IDENT OBRACKET IDENT CBRACKET DO NL stmt_list DONE'''
@@ -321,8 +290,8 @@ if __name__ == '__main__':
     parser = Parser()
     txt = sys.stdin.read()
     print(f'INPUT: {txt}')
-    tree, func_table = parser.parse(txt)
-    # tree = parser.parser.parse(txt, debug=True)
+    # tree, func_table = parser.parse(txt)
+    tree = parser.parser.parse(txt, debug=True)
     if tree is not None:
         tree.print()
     else:
