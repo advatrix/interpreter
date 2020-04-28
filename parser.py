@@ -75,7 +75,7 @@ class Parser:
         ('nonassoc', 'IFY'),
         ('nonassoc', 'ELUND'),
         ('left', 'PLUS', 'MINUS'),
-        ('nonassoc', 'GREATER', 'LESS', 'EQUAL'),
+        ('nonassoc', 'GREATER', 'LESS'),
     )
     
     def __init__(self):
@@ -248,28 +248,42 @@ class Parser:
             p[0] = SyntaxTreeNode('while', children={'condition': p[2], 'body': p[4], 'finish': p[6]},
                                   lineno=p.lineno(1), lexpos=p.lexpos(1))
 
-    def p_if(self, p):
-        '''if : IF expression DO stmt_list DONE NL %prec IFX
-        | IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL %prec IFY
-        | IF expression DO stmt_list DONE NL ELUND DO stmt_list DONE NL %prec IFY
-        | IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL ELUND DO stmt_list DONE
-        '''
+    def p_if_short(self, p):
+        'if : IF expression DO stmt_list DONE NL %prec IFX'
+        p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'elund': None, 'eldef': None})
     
+    def p_if_eldef(self, p):
+        'if : IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL %prec IFY'
+        p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'elund': None, 'eldef': p[9]})
+        
+    def p_if_elund(self, p):
+        'if : IF expression DO stmt_list DONE NL ELUND DO stmt_list DONE NL %prec IFY'
+        p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'elund': p[9], 'eldef': None})
+    
+    def p_if_long(self, p):
+        'if : IF expression DO stmt_list DONE NL ELDEF DO stmt_list DONE NL ELUND DO stmt_list DONE'
+        p[0] = SyntaxTreeNode('if', children={'condition': p[2], 'body': p[4], 'elund': p[14], 'eldef': p[9]})
+
+    def p_unnamed_function(self, p):
+        'function : FUNCTION OBRACKET IDENT CBRACKET DO stmt_list DONE'
+        p[0] = SyntaxTreeNode(
+            'unnamed_function',
+            children={
+                'param': SyntaxTreeNode('ident', p[3], lineno=p.lineno(3), lexpos=p.lexpos(3)),
+                'body': p[6]
+            },
+            lineno=p.lineno(1),
+            lexpos=p.lexpos(1))
+
     def p_function(self, p):
-        '''function : FUNCTION OBRACKET IDENT CBRACKET DO stmt_list DONE 
-        | FUNCTION IDENT OBRACKET IDENT CBRACKET DO NL stmt_list DONE'''
-        if len(p) == 8:
-            p[0] = SyntaxTreeNode('unnamed_function', 
-                                  children={'param': SyntaxTreeNode('ident', p[3], lineno=p.lineno(3), lexpos=p.lexpos(3)), 
-                                                                'body': p[6]},
-                                 lineno=p.lineno(1), lexpos=p.lexpos(1))
-        else:
-            self._functions[p[2]] = SyntaxTreeNode(
-                'function', 
-                children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)),'body': p[8]},
-                lineno=p.lineno(1), 
-                lexpos=p.lexpos(1))
-            p[0] = SyntaxTreeNode('function_description', value=p[2], lineno=p.lineno(1), lexpos=p.lexpos(1))
+        '''function : FUNCTION IDENT OBRACKET IDENT CBRACKET DO NL stmt_list DONE'''
+        self._functions[p[2]] = SyntaxTreeNode(
+            'function',
+            children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)),'body': p[8]},
+            lineno=p.lineno(1),
+            lexpos=p.lexpos(1)
+        )
+        p[0] = SyntaxTreeNode('function_description', value=p[2], lineno=p.lineno(1), lexpos=p.lexpos(1))
 
     ''' def p_error(self, p):
         if not p:
@@ -282,10 +296,8 @@ class Parser:
                 break
         self.parser.restart()
     '''
-        
 
-        
-        
+
 if __name__ == '__main__':
     parser = Parser()
     txt = sys.stdin.read()
