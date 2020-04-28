@@ -22,3 +22,10 @@ def test_multidim_array():
     assert intr.sym_table[0]['a'].value[0].value == 1
     assert intr.sym_table[0]['a'].value[1].value[0].value == 2
     assert intr.sym_table[0]['a'].value[1].value[1].value == 3
+
+
+def test_wrong_index():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int b := [2, 3]\nint a := b(16)\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 'nan'

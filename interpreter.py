@@ -4,7 +4,7 @@
 # TODO: error handling refactoring:
 # Interpreter should collect errors and return them afterwards
 
-# TODO: chain expr order
+# TODO: lvalue and rvalue indexing
 # map description
 # robot loading
 
@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 import parser
 import random
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple, Optional, Tuple
 
 
 class Robot:
@@ -427,6 +427,7 @@ class Interpreter:
         self.sym_table = [dict()]
         self.scope = 0
         self.robot = self.tree = self.funcs = None
+        self._rval = False  # rvalue flag
         
     def interpret(self, program, map_description=None, initial_conditions: Optional[NamedTuple]=None, robot_mode=False):
         # TODO: robot implementation
@@ -538,26 +539,26 @@ class Interpreter:
     def _variable(self, node):
         var = node.value
         if var not in self.sym_table[self.scope].keys():
-            self._error('name', node)
-            return
+            return Var('bool', 'undef')
         return self.sym_table[self.scope][var]
     
-    def _indexing(self, node):
-        try:
+    def _indexing(self, node) -> Var:
+        if self._rval:  # need to return only value
             var = node.value
             index = self.cast.cast('int', self._interpret_node(node.children))
-            if index.value == len(self.sym_table[self.scope][var].value):
-                self.sym_table[self.scope][var].value.append(Var())
-            elif index.value > len(self.sym_table[self.scope][var].value):
-                self._error('index', node)
-                return
-            return self.sym_table[self.scope][var].value[index.value]
-        except ValueError:
-            self._error('value', node)
-        except CastError:
-            self._error('cast', node)
-        except NameError:
-            self._error('name', node)  
+            var = self._find_var(node.value)
+            if var:
+                try:
+                    return var.value[index.value]
+                except IndexError:
+                    return Var('bool', 'undef')
+            return Var('bool', 'undef')
+        var = node.value
+        ret = self._find_var(var)
+        if ret:
+            return ret
+        else:
+            self._error('name', node)
         
     def _function_call(self, node):
         param = self._interpret_node(node.children)
@@ -608,12 +609,11 @@ class Interpreter:
         self.scope -= 1
         self.sym_table.pop()
 
-    def _find_var(self, expr):
+    def _find_var(self, expr) -> Var:
         if expr in self.sym_table[0].keys():
             return self.sym_table[0][expr]
         if expr in self.sym_table[self.scope].keys():
             return self.sym_table[self.scope][expr]
-        raise KeyError
         
     def _sizeof(self, node):
         expr = self._interpret_node(node)
