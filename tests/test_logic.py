@@ -127,3 +127,27 @@ def test_eq_wrong_expr():
     intr._interpret_node(tree)
     assert intr.sym_table[0]['a'].value == 'false'
     assert intr.sym_table[0]['a'].type == 'bool'
+
+
+def test_ls_bool():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('bool a := true < false\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 'false'
+    assert intr.sym_table[0]['a'].type == 'bool'
+
+
+def test_gr_bool():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('bool a := true > false\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 'true'
+    assert intr.sym_table[0]['a'].type == 'bool'
+
+
+def test_gr_bool_undef():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('bool a := true > undef\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['a'].value == 'undef'
+    assert intr.sym_table[0]['a'].type == 'bool'
