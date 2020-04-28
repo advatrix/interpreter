@@ -348,7 +348,7 @@ class CastManager:
         
     @staticmethod
     def int_to_bool(value):
-        if value.value == '0':
+        if value.value == 0:
             return Var('bool', 'false')
         elif isinstance(value.value, int):
             return Var('bool', 'true')
@@ -575,10 +575,14 @@ class Interpreter:
         
     def _while(self, node):
         try:
-            while self.cast.cast('bool', node.children['condition']).value == 'true':
-                self._interpret_node(node.children['body'])
-            if node.children['finish']:
-                self._interpret_node(node.children['finish'])
+            while True:
+                condition = self.cast.cast('bool', self._interpret_node(node.children['condition'])).value
+                if condition == 'true':
+                    self._interpret_node(node.children['body'])
+                else:
+                    if node.children['finish'] and condition == 'false':
+                        self._interpret_node(node.children['finish'])
+                    break
         except CastError:
             self._error('cast', node)
         except ValueError:
@@ -587,7 +591,7 @@ class Interpreter:
             self._error('name', node)
                 
     def _if(self, node):
-        condition = self.cast.cast('bool', node.children['condition']).value
+        condition = self.cast.cast('bool', self._interpret_node(node.children['condition'])).value
         if condition == 'true':
             self._interpret_node(node.children['body'])
         elif condition == 'false':

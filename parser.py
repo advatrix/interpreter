@@ -89,6 +89,7 @@ class Parser:
             res = self.parser.parse(s)
             return res, self._functions
         except LexError:
+            self.acc = False
             sys.stderr.write(f'Illegal token {s}\n')
 
     def check_program(self, prog):
@@ -111,7 +112,21 @@ class Parser:
             p[0] = SyntaxTreeNode('stmt_list', children=[p[1]])
         else:
             p[0] = SyntaxTreeNode('stmt_list', children=[p[1], p[2]])
-        
+
+    def p_statement_error(self, p):
+        '''statement : err_list'''
+        sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
+        # p[0] = SyntaxTreeNode('error')
+
+    def p_err_list(self, p):
+        '''err_list : err_list error
+        | error'''
+        self.acc = False
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = p[1] + p[2]
+
     def p_statement(self, p):
         '''statement : declaration_list NL
         | assignment NL
