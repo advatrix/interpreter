@@ -29,3 +29,4 @@ def test_wrong_index():
     tree, _ = intr.parser.parse('int b := [2, 3]\nint a := b(16)\n')
     intr._interpret_node(tree)
     assert intr.sym_table[0]['a'].value == 'nan'
+    assert intr.sym_table[0]['a'].type == 'int'

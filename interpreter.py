@@ -13,6 +13,7 @@ import sys
 import parser
 import random
 from typing import List, NamedTuple, Optional, Tuple
+from copy import deepcopy
 
 
 class Robot:
@@ -239,6 +240,9 @@ class Var:
     def __repr__(self):
         return f'{self.type}, {self.value}'
 
+    def __deepcopy__(self, memodict={}):
+        return Var(self.type, self.value)
+
 
 class RedeclarationError(Exception):
     """Exception for re-declared variables"""
@@ -446,9 +450,6 @@ class Interpreter:
             return
         # self._interpret_node(self.tree)
         self._interpret_node(self.funcs['main'].children['body'])
-        
-    def _interpret_tree(self, tree):
-        pass
     
     def _interpret_node(self, node):
         if node is None:
@@ -538,27 +539,20 @@ class Interpreter:
 
     def _variable(self, node):
         var = node.value
-        if var not in self.sym_table[self.scope].keys():
-            return Var('bool', 'undef')
-        return self.sym_table[self.scope][var]
-    
+        return deepcopy(self._find_var(var)) if self._rval else self._find_var(var)
+
     def _indexing(self, node) -> Var:
+        index = self.cast.cast('int', self._interpret_node(node.children))
         if self._rval:  # need to return only value
-            var = node.value
-            index = self.cast.cast('int', self._interpret_node(node.children))
             var = self._find_var(node.value)
             if var:
                 try:
-                    return var.value[index.value]
+                    return deepcopy(var.value[index.value])
                 except IndexError:
                     return Var('bool', 'undef')
             return Var('bool', 'undef')
         var = node.value
-        ret = self._find_var(var)
-        if ret:
-            return ret
-        else:
-            self._error('name', node)
+        return self._find_var(var).value[index.value]
         
     def _function_call(self, node):
         param = self._interpret_node(node.children)
@@ -570,7 +564,7 @@ class Interpreter:
         self.sym_table.append(dict())
         func_subtree = self.funcs[func] if func in self.funcs.keys() else self.sym_table[self.scope-1][func]
         self.sym_table[self.scope][func_subtree.children['param'].value] = param
-        self._interpret_tree(func_subtree.children['body'])
+        self._interpret_node(func_subtree.children['body'])
         self.scope -= 1
         self.sym_table.pop()
         
@@ -617,11 +611,10 @@ class Interpreter:
         
     def _sizeof(self, node):
         expr = self._interpret_node(node)
-        try:
-            var = self._find_var(expr)
+        var = self._find_var(expr)
+        if var:
             return Var('int', len(var.value)) if isinstance(var.value, list) else Var('int', 1)
-        except KeyError:
-            self._error('undeclared', node)
+        self._error('undeclared', node)
         
     # ROBOT OPERATORS #
     
@@ -717,10 +710,6 @@ class Interpreter:
     def _gr(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self.cast.cast('int', self._interpret_node(op1))
         expr2 = self.cast.cast('int', self._interpret_node(op2))
-        '''if expr1.value == 'inf' and expr1.value == '-inf':
-            return Var('bool', 'true')
-        if expr1.value == '-inf' and expr2.value == 'inf':
-            return Var('bool', 'false')'''
         if expr1.value == 'nan' or expr2.value == 'nan':
             return Var('bool', 'undef')
         if expr1.value == expr2.value and expr1.value in ['inf', '-inf']:
@@ -797,12 +786,13 @@ class Interpreter:
                 self._error('redecl', node)
                 return
         if node.type == 'assignment':
-            # self._create_new_var(_type, node.value)
             variable = node.children[0].value
             if node.children[1].type != 'array':
+                self._rval = True
                 expr = self._interpret_node(node.children[1])
+                self._rval = False
                 try:
-                    self._assign(_type.value, variable, expr)
+                    self._assign(_type.value, variable, expr, casting=False)
                 except CastError:
                     self._error('cast', node)
                 except ValueError:
@@ -817,29 +807,39 @@ class Interpreter:
             raise RedeclarationError
         self.sym_table[self.scope][name] = Var(_type, None)
                 
-    def _assign(self, _type: str, variable: Var, expr: Var):
-        scope = self.scope
-        if variable not in self.sym_table[self.scope].keys():
-            if variable not in self.sym_table[0].keys():
-                raise NameError
+    def _assign(self, _type: str, variable: str, expr: Var, casting=True) -> None:
+        """Assign a variable to expression
+
+        Parameters:
+            casting (bool): flag of variable necessity to be casted to expr type
+                for example, if the variable is assigned just after being declared, casting is not needed
+
+        Raises:
+            CastError -- if expr casting to variable type was unsuccessful
+        """
+        expr = deepcopy(expr)
+        var = self._find_var(variable)
+        if var:
+            if isinstance(expr.value, list):
+                self._assign_array(_type, variable, expr.value, casting)
             else:
-                scope = 0
-        if _type in [expr.type, 'var']:
-            self.sym_table[scope][variable] = expr
-        elif not isinstance(expr.value, list):
-            casted_value = self.cast.cast(_type, expr)
-            self.sym_table[scope][variable] = casted_value
-        else:
-            self._assign_array(_type, variable, expr)
-    
-    def _assign_array(self, _type: str, variable, arr):
-        if _type != 'var':
-            cast_arr = [self.cast.cast(_type, a) for a in arr]
-            self.sym_table[self.scope][variable] = Var(_type, cast_arr)
-        else:
-            prob_type = arr[0].type
-            cast_arr = [self.cast.cast(prob_type, a) for a in arr]
-            self.sym_table[self.scope][variable] = Var(_type, cast_arr)
+                if var.type in ['var', expr.type] or casting:
+                    var.value = expr.value
+                    var.type = expr.type
+                else:
+                    var.value = self.cast.cast(var.type, expr).value
+
+    def _assign_array(self, _type: str, variable: str, arr: List[Var], casting=True):
+        var = self._find_var(variable)
+        if var:
+            if casting:
+                if len({a.type for a in arr}) > 1:  # array elements are of different types
+                    var.type = 'var'
+                else:
+                    var.type = arr[0].type
+                var.value = arr
+            else:
+                var.value = [self.cast.cast(var.type, a) for a in arr]
             
     def _array(self, node) -> list:
         ret = []
