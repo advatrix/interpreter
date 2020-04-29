@@ -170,14 +170,25 @@ class Interpreter:
         self.program = None
         self.sym_table = [dict()]
         self.scope = 0
-        self.robot = self.tree = self.funcs = None
+        self.robot = self.tree = self.funcs = self.argv = None
         self._rval = False  # rvalue flag
         
-    def interpret(self, program, map_description=None, initial_conditions: Optional[NamedTuple]=None, robot_mode=False):
+    def interpret(self, program: str, map_description: list = None, initial_conditions: Optional[NamedTuple] = None,
+                  robot_mode: bool = False, argv: list = None):
+        """
+        Interpret a program
+
+        Parameters:
+            program(str): program text
+            map_description(list): a three-dimensional array of Cell objects
+            initial_conditions(NamedTuple): initial conditions for robot (position, rotation etc)
+            robot_mode(bool): if True, interpret a program for robot, otherwise interpret abstract code
+            argv(list[int]): console params vector
+        """
         # TODO: robot implementation
         self.map = map_description  # Three-dimensional array of Cell objects
         if robot_mode:
-            self.robot = Robot(initial_conditions[x],
+            self.robot = robot.Robot(initial_conditions[x],
                                initial_conditions[y],
                                initial_conditions[z],
                                initial_conditions[rot],
@@ -185,11 +196,12 @@ class Interpreter:
                                map_description)
         self.program = program  # Program code
         self.tree, self.funcs = self.parser.parse(program)
-        if 'main' not in self.funcs.keys():
-            self._error('nomain')
-            return
+        self.argv = argv
         # self._interpret_node(self.tree)
-        self._function_call(self.funcs['main'].children['body'])
+        try:
+            self._main(self.funcs['main'])
+        except StopExecution:
+            pass
     
     def _interpret_node(self, node):
         if node is None:
@@ -265,16 +277,24 @@ class Interpreter:
         elif node.type == 'return':
             raise StopExecution
 
+    def _main(self, node: parser.SyntaxTreeNode):
+        if self.argv:
+            argv = [Var('int', arg) for arg in self.argv]
+            self.sym_table[0]['argv'] = Var('int', argv)
+        try:
+            self._interpret_node(node.children['body'])
+        except StopExecution:
+            pass
+
     def _assignment(self, node: parser.SyntaxTreeNode):
         var = self._interpret_node(node.children[0])
         expr = self._interpret_node(node.children[1])
         var.type = expr.type
         var.value = expr.value
 
-
     def _variable(self, node):
         var = node.value
-        return deepcopy(self._find_var(var)) if self._rval else self._find_var(var)
+        return self._find_var(var)
 
     def _indexing(self, node) -> Var:
         index = self.cast.cast('int', self._interpret_node(node.children))
@@ -282,7 +302,7 @@ class Interpreter:
             var = self._find_var(node.value)
             if var:
                 try:
-                    return deepcopy(var.value[index.value])
+                    return var.value[index.value]
                 except IndexError:
                     return Var('bool', 'undef')
             return Var('bool', 'undef')
@@ -298,14 +318,16 @@ class Interpreter:
             return var.value[index.value]
         
     def _function_call(self, node):
-        param = self._interpret_node(node.children)
-        func = node.value
-        if func not in self.funcs.keys() and func not in self.sym_table[self.scope].keys():
+        param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
+            else self._interpret_node(node.children)
+        func_name = node.value
+        if func_name not in self.funcs.keys() and func_name not in self.sym_table[self.scope].keys():
             self._error('name', node)
             return
         self.scope += 1
         self.sym_table.append(dict())
-        func_subtree = self.funcs[func] if func in self.funcs.keys() else self.sym_table[self.scope-1][func]
+        func_subtree = self.funcs[func_name] if func_name in self.funcs.keys() \
+            else self.sym_table[self.scope-1][func_name]
         self.sym_table[self.scope][func_subtree.children['param'].value] = param
         try:
             self._interpret_node(func_subtree.children['body'])

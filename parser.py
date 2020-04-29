@@ -17,7 +17,8 @@ class SyntaxTreeNode:
         self.lexpos = lexpos
         
     def __repr__(self):
-        return f'''{self.type} {self.value} {self.lineno}:{self.lexpos}'''
+
+        return f"""{self.type} {self.value or ''} {self.lineno or ''}:{self.lexpos or ''}"""
 
     def print_(self, level: int = 0):
         print(' ' * level, self)
@@ -28,7 +29,8 @@ class SyntaxTreeNode:
         print(' ' * level, self)
         if isinstance(self.children, list):
             for child in self.children:
-                child.print(level + 1)
+                if child:
+                    child.print(level + 1)
         elif isinstance(self.children, SyntaxTreeNode):
             self.children.print(level + 1)
         elif isinstance(self.children, dict):
@@ -114,18 +116,10 @@ class Parser:
             p[0] = SyntaxTreeNode('stmt_list', children=[p[1], p[2]])
 
     def p_statement_error(self, p):
-        '''statement : err_list'''
-        sys.stderr.write(f'Syntax error: "{p[1][0].value}" at {p[1][0].lineno}:{p[1][0].lexpos}\n')
-        # p[0] = SyntaxTreeNode('error')
-
-    def p_err_list(self, p):
-        '''err_list : err_list error
-        | error'''
+        '''statement : error'''
         self.acc = False
-        if len(p) == 2:
-            p[0] = [p[1]]
-        else:
-            p[0] = p[1] + p[2]
+        sys.stderr.write(f'Syntax error: "{p[1].value}" at {p[1].lineno}:{p[1].lexpos}\n')
+        # p[0] = SyntaxTreeNode('error')
 
     def p_statement(self, p):
         '''statement : declaration_list NL
@@ -138,6 +132,7 @@ class Parser:
         | empty NL
         '''
         p[0] = p[1]
+
 
     def p_return(self, p):
         '''statement : RETURN NL'''
@@ -321,7 +316,8 @@ if __name__ == '__main__':
     txt = sys.stdin.read()
     print(f'INPUT: {txt}')
     # tree, func_table = parser.parse(txt)
-    tree = parser.parser.parse(txt, debug=True)
+    tree = parser.parser.parse(txt)
+    print(parser._functions)
     for key, value in parser._functions.items():
         print(key)
         value.print()
