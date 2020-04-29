@@ -27,13 +27,23 @@ def test_multi_functions_table():
 
 def test_function_interpretation():
     intr = interpreter.Interpreter()
-    program = """
-    function main(a) do
+    program = """function main(a) do
         int a := 2
     done
 """
-    tree, funcs = intr.parser.parse(program)
-    intr.interpret(None, None, )
-    assert funcs['main'].children['param'].value == 'a'
+    intr.interpret(program)
+    assert intr.funcs['main'].children['param'].value == 'a'
     assert intr.sym_table[0]['a'].value == 2
 
+
+def test_return():
+    intr = interpreter.Interpreter()
+    program = """function main(a) do
+            int a := 2
+            return
+            a := 3
+        done
+    """
+    intr.interpret(program)
+    assert intr.funcs['main'].children['param'].value == 'a'
+    assert intr.sym_table[0]['a'].value == 2

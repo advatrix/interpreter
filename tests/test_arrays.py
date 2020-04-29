@@ -30,3 +30,11 @@ def test_wrong_index():
     intr._interpret_node(tree)
     assert intr.sym_table[0]['a'].value == 'nan'
     assert intr.sym_table[0]['a'].type == 'int'
+
+
+def test_number_to_array():
+    intr = interpreter.Interpreter()
+    tree, _ = intr.parser.parse('int b := 1\nb(1) := 2\n')
+    intr._interpret_node(tree)
+    assert intr.sym_table[0]['b'].value[0].value == 1
+    assert intr.sym_table[0]['b'].value[1].value == 2

@@ -14,223 +14,10 @@ import parser
 import random
 from typing import List, NamedTuple, Optional, Tuple
 from copy import deepcopy
+import robot
+import cell
+import map
 
-
-class Robot:
-    def __init__(self, x, y, z, rot, capacity, map_):
-        # Rotation:
-        #  -1 <-- -->+1
-        #   --------
-        #  /   0    \
-        # /5        1\
-        #/            \
-        #\            /
-        # \4        2/
-        #  \   3    /
-        #   --------
-        #
-        #   Coordinates:
-        #   ^ X  ^ Y
-        #   |   /
-        #   |  /
-        #   | /
-        #   |/
-        #   /\
-        #     \
-        #      V Z
-        #
-        self.x = x
-        self.y = y
-        self.z = z
-        self.rot = rot
-        self.capacity = capacity
-        self.slots = []
-        self.map = map_
-        
-    def __repr__(self):
-        return f'''({self.x}, {self.y}, {self.z}):{self.rot}
-Slots: {self.slots}
-Capacity: {self.sum()}/{self.capacity}'''
-    
-    def sum(self):
-        return sum([box.weight for box in self.slots if box])
-    
-    def next(self):
-        if self.rot == 0:
-            return self.map[self.y+1][self.x][self.z-1]
-        if self.rot == 1:
-            return self.map[self.y][self.x+1][self.z-1]
-        if self.rot == 2:
-            return self.map[self.y-1][self.x+1][self.z]
-        if self.rot == 3:
-            return self.map[self.y-1][self.x][self.z+1]
-        if self.rot == 4:
-            return self.map[self.y][self.x-1][self.z+1]
-        if self.rot == 5:
-            return self.map[self.y+1][self.x-1][self.z]
-        
-    def forward(self, dist):  # what if cell = undef??
-        for i in range(dist):
-            if self.rot == 0:
-                _next = self.map[self.y+1][self.x][self.z-1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.y += 1
-                self.z -= 1
-            elif self.rot == 1:
-                _next = self.map[self.y][self.x+1][self.z-1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.x += 1
-                self.z -= 1
-            elif self.rot == 2:
-                _next = self.map[self.y-1][self.x+1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.x += 1
-                self.y -= 1
-            elif self.rot == 3:
-                _next = self.map[self.y-1][self.x][self.z+1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z += 1
-                self.y -= 1
-            elif self.rot == 4:
-                _next = self.map[self.y][self.x-1][self.z+1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z += 1
-                self.x -= 1
-            elif self.rot == 5:
-                _next = self.map[self.y+1][self.x-1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.y += 1
-                self.x -= 1
-                    
-    def backward(self, dist):
-        for i in range(dist):
-            if self.rot == 0:
-                _next = self.map[self.y-1][self.x][self.z+1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.y -= 1
-                self.z += 1
-            elif self.rot == 1:
-                _next = self.map[self.y][self.x-1][self.z+1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.x -= 1
-                self.z += 1
-            elif self.rot == 2:
-                _next = self.map[self.y+1][self.x-1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.x -= 1
-                self.y += 1
-            elif self.rot == 3:
-                _next = self.map[self.y+1][self.x][self.z-1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z -= 1
-                self.y += 1
-            elif self.rot == 4:
-                _next = self.map[self.y][self.x+1][self.z-1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z -= 1
-                self.x += 1
-            elif self.rot == 5:
-                _next = self.map[self.y-1][self.x+1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.y -= 1
-                self.x += 1
-        
-    def left(self):
-        if self.sum() < self.capacity:
-            self.rot = (self.rot + 1) % 6
-    
-    def right(self):
-        if self.sum() < self.capacity:
-            self.rot = (2 * self.rot - 1) % 6
-        
-    def load(self, expr):
-        if self.next().type.type != 'box':
-            return Var('bool', 'undef')
-        if expr > len(self.slots):
-            self.slots += [None for _ in range(expr-len(self.slots)+1)]
-            self.slots[expr] = self.next().type
-            return Var('bool', 'true')
-        elif self.slots[expr]:
-            return Var('bool', 'false')
-
-    def drop(self, expr):
-        if self.next.type.type == 'empty' and self.slots[expr]:
-            self.next.type = self.slots[expr]
-            self.slots[expr] = None
-            return Var('bool', 'true')
-        elif self.next.type.type != 'empty':
-            return Var('bool', 'false')
-        else:
-            return Var('bool', 'undef')
-        
-    def look(self):
-        i = 0
-        x = self.x
-        y = self.y
-        z = self.z
-        while True:
-            i += 1
-            if self.map[x][y][z].type.type in ['box', 'wall']:
-                return Var('int', i)
-            if self.rot == 0:
-                y += 1
-                z -= 1
-            elif self.rot == 1:
-                x += 1
-                z -= 1
-            elif self.rot == 2:
-                x += 1
-                y -= 1
-            elif self.rot == 3:
-                z += 1
-                y -= 1
-            elif self.rot == 4:
-                z += 1
-                x -= 1
-            elif self.rot == 5:
-                y += 1
-                x -= 1
-        
-    def test(self):
-        i = 0
-        x = self.x
-        y = self.y
-        z = self.z
-        while True:
-            i += 1
-            if self.map[x][y][z].type.type in ['box', 'wall']:
-                return Var('cell', self.map[x][y][z].type.type)
-            if self.rot == 0:
-                y += 1
-                z -= 1
-            elif self.rot == 1:
-                x += 1
-                z -= 1
-            elif self.rot == 2:
-                x += 1
-                y -= 1
-            elif self.rot == 3:
-                z += 1
-                y -= 1
-            elif self.rot == 4:
-                z += 1
-                x -= 1
-            elif self.rot == 5:
-                y += 1
-                x -= 1
-                
 
 class Var:
     def __init__(self, symtype='var', value=None):
@@ -262,53 +49,6 @@ class ReturnError(Exception):
 class StopExecution(Exception):
     """Exception for RETURN keyword inside a function (like StopIteration in generators)"""
     pass
-
-
-class Cell:
-    def __init__(self, x, y, z, type_):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.type = type_
-        
-    def __repr__(self):
-        return f'{self.x} {self.y} {self.z} : {self.type}'
-
-
-class CellType:
-    type = 'cell'
-    
-    def __init__(self):
-        pass
-    
-    def __repr__(self):
-        return self.type
-
-
-class Empty(CellType):
-    type = 'empty'
-
-    
-class Wall(CellType):
-    type = 'wall'
-
-
-class Undef(CellType):
-    type = 'undef'
-
-
-class Exit(CellType):
-    type = 'exit'
-
-
-class Box:
-    type = 'box'
-    
-    def __init__(self, weight):
-        self.weight = weight
-        
-    def __repr__(self):
-        return f'box, weight: {self.weight}'
 
 
 class CastManager:
@@ -369,7 +109,7 @@ class CastManager:
     @staticmethod
     def bool_to_cell(value):
         if value.value == 'undef':
-            return Var('cell', Undef())
+            return Var('cell', robot.Undef())
         raise CastError
         
     @staticmethod
@@ -389,15 +129,15 @@ class CastManager:
     @staticmethod
     def int_to_cell(value):
         if value.value == 0:
-            return Var('cell', Empty())
+            return Var('cell', cell.Empty())
         elif value.value == 'inf':
-            return Var('cell', Wall())
+            return Var('cell', cell.Wall())
         elif value == '-inf':
-            return Var('cell', Exit())
+            return Var('cell', cell.Exit())
         elif value == 'nan':
-            return Var('cell', Undef())
+            return Var('cell', cell.Undef())
         elif isinstance(value.value, int):
-            return Var('cell', Box(value))
+            return Var('cell', cell.Box(value))
         raise ValueError
 
 
@@ -449,7 +189,7 @@ class Interpreter:
             self._error('nomain')
             return
         # self._interpret_node(self.tree)
-        self._interpret_node(self.funcs['main'].children['body'])
+        self._function_call(self.funcs['main'].children['body'])
     
     def _interpret_node(self, node):
         if node is None:
@@ -512,8 +252,6 @@ class Interpreter:
                 return self._test()
             elif node.value.lower() == 'sizeof':
                 return self._sizeof(node.children)
-            elif node.value.lower() == 'return':
-                self._return(node)
         elif node.type == 'while':
             self._while(node)
         elif node.type == 'if':
@@ -524,6 +262,8 @@ class Interpreter:
             pass
         elif node.type == 'assignment':
             self._assignment(node)
+        elif node.type == 'return':
+            raise StopExecution
 
     def _assignment(self, node: parser.SyntaxTreeNode):
         var = self._interpret_node(node.children[0])
@@ -531,11 +271,6 @@ class Interpreter:
         var.type = expr.type
         var.value = expr.value
 
-    def _return(self, node):
-        if not self.scope:
-            self._error('return', node)
-        else:
-            raise StopExecution
 
     def _variable(self, node):
         var = node.value
@@ -551,8 +286,16 @@ class Interpreter:
                 except IndexError:
                     return Var('bool', 'undef')
             return Var('bool', 'undef')
-        var = node.value
-        return self._find_var(var).value[index.value]
+        var = self._find_var(node.value)
+        if not isinstance(var.value, list):
+            var.value = [Var(var.type, var.value)]
+        try:
+            return var.value[index.value]
+        except IndexError:
+            var.value += \
+                [self.cast.cast(var.type, Var('bool', 'undef'))
+                 for _ in range(index.value-len(var.value)+1)]  # extend the array
+            return var.value[index.value]
         
     def _function_call(self, node):
         param = self._interpret_node(node.children)
@@ -564,7 +307,10 @@ class Interpreter:
         self.sym_table.append(dict())
         func_subtree = self.funcs[func] if func in self.funcs.keys() else self.sym_table[self.scope-1][func]
         self.sym_table[self.scope][func_subtree.children['param'].value] = param
-        self._interpret_node(func_subtree.children['body'])
+        try:
+            self._interpret_node(func_subtree.children['body'])
+        except StopExecution:
+            pass
         self.scope -= 1
         self.sym_table.pop()
         
@@ -641,22 +387,22 @@ class Interpreter:
     def _load(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            return self.robot.load(expr)
+            return Var('bool', self.robot.load(expr))
         except CastError:
             self._error('cast', node)
         
     def _drop(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            return self.robot.drop(expr)
+            return Var('bool', self.robot.drop(expr))
         except CastError:
             self._error('cast', node)
             
     def _look(self):
-        return self.robot.look()
+        return Var('int', self.robot.look())
     
     def _test(self):
-        return self.robot.test()
+        return Var('cell', self.robot.test())
     
     # ARITHMETICAL AND LOGICAL OPERATORS #
     
@@ -762,13 +508,13 @@ class Interpreter:
         elif value in ['u', 'undef']:
             return Var('bool', 'undef')
         elif value == 'empty':
-            return Var('cell', Empty())
+            return Var('cell', cell.Empty())
         elif value == 'wall':
-            return Var('cell', Wall())
+            return Var('cell', cell.Wall())
         elif value == 'box':
-            return Var('cell', Box(random.randint(0, 100)))
+            return Var('cell', cell.Box(random.randint(0, 100)))
         elif value == 'exit':
-            return Var('cell', Exit())
+            return Var('cell', cell.Exit())
         else:
             return Var('int', int(value[:-1], 16))
                                 
@@ -817,7 +563,7 @@ class Interpreter:
         Raises:
             CastError -- if expr casting to variable type was unsuccessful
         """
-        expr = deepcopy(expr)
+        # expr = deepcopy(expr)
         var = self._find_var(variable)
         if var:
             if isinstance(expr.value, list):

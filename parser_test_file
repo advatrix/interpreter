@@ -1,0 +1,5 @@
+function main(argv) do
+    int a := 2
+    return
+    a := 3
+done

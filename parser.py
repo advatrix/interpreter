@@ -135,10 +135,13 @@ class Parser:
         | operator NL
         | function NL
         | function_call NL
-        | RETURN NL
         | empty NL
         '''
         p[0] = p[1]
+
+    def p_return(self, p):
+        '''statement : RETURN NL'''
+        p[0] = SyntaxTreeNode('return', lineno=p.lineno(1), lexpos=p.lexpos(1))
         
     
     def p_declaration_list(self, p):
@@ -319,6 +322,9 @@ if __name__ == '__main__':
     print(f'INPUT: {txt}')
     # tree, func_table = parser.parse(txt)
     tree = parser.parser.parse(txt, debug=True)
+    for key, value in parser._functions.items():
+        print(key)
+        value.print()
     if tree is not None:
         tree.print()
     else:
