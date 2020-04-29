@@ -147,13 +147,10 @@ class Interpreter:
     ERRORS:
     (1) - 'nomain' - no main function (no entry point in code)
     (2) - 'redecl' - redeclaration of a variable
-    (3) - 'undecl' - undeclared variable usage -- TODO: delete this because it's not an error
-    (4) - 'index' - IndexError
+    (3) - 'undecl' - undeclared variable usage
     (5) - 'unfunc' - undeclared function usage
     (6) - 'cast' - CastError
     (7) - 'value' - ValueError
-    (8) - 'return' - RETURN outside any function
-    (9) - 'gen' - this is not a program!
     
     """
        
@@ -172,6 +169,7 @@ class Interpreter:
         self.scope = 0
         self.robot = self.tree = self.funcs = self.argv = None
         self._rval = False  # rvalue flag
+        self.errors = []
         
     def interpret(self, program: str, map_description: list = None, initial_conditions: Optional[NamedTuple] = None,
                   robot_mode: bool = False, argv: list = None):
@@ -198,10 +196,16 @@ class Interpreter:
         self.tree, self.funcs = self.parser.parse(program)
         self.argv = argv
         # self._interpret_node(self.tree)
-        try:
-            self._main(self.funcs['main'])
-        except StopExecution:
-            pass
+        if 'main' not in self.funcs.keys():
+            self._error('nomain')
+        else:
+            try:
+                self._main(self.funcs['main'])
+            except StopExecution:
+                pass
+        for err in self.errors:
+            sys.stderr.write(err)
+
     
     def _interpret_node(self, node):
         if node is None:
@@ -377,13 +381,13 @@ class Interpreter:
         if expr in self.sym_table[self.scope].keys():
             return self.sym_table[self.scope][expr]
         
-    def _sizeof(self, node):
+    def _sizeof(self, node) -> Var:
         expr = self._interpret_node(node)
         var = self._find_var(expr)
         if var:
             return Var('int', len(var.value)) if isinstance(var.value, list) else Var('int', 1)
-        self._error('undeclared', node)
-        
+        return Var('int', 'nan')
+
     # ROBOT OPERATORS #
     
     def _forward(self, node):
@@ -626,19 +630,15 @@ class Interpreter:
                 ret.append(node)
 
     def _error(self, err_type, node=None):
-        sys.stderr.write(f'Error {err_type}: ')
-        if err_type == 1:
-            sys.stderr.write(f'no main function\n')
-            return
-        elif err_type == 2:
-            sys.stderr.write(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is already declared\n')
-        elif err_type == 3:
-            sys.stderr.write(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is not defined\n')
-        elif err_type == 4:
-            sys.stderr.write(f'index error "{node.value}" at {node.lineno}:{node.lexpos}\n')
-        elif err_type == 5:
-            sys.stderr.write(f'Unknown function call "{node.value}" at {node.lineno}:{node.lexpos}\n')
-        elif err_type == 6:
-            sys.stderr.write(f'failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
-        elif err_type == 7:
-            sys.stderr.write(f'incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
+        if err_type == 'nomain':
+            self.errors.append('Error: no main function')
+        elif err_type == 'redecl':
+            self.errors.append(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is already declared\n')
+        elif err_type == 'undecl':
+            self.errors.append(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is not defined\n')
+        elif err_type == 'unfunc':
+            self.errors.append(f'Unknown function call "{node.value}" at {node.lineno}:{node.lexpos}\n')
+        elif err_type == 'cast':
+            self.errors.append(f'failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
+        elif err_type == 'value':
+            self.errors.append(f'incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
