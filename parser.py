@@ -40,35 +40,6 @@ class SyntaxTreeNode:
                     value.print(level + 2)
 
 
-'''class SyntaxTreeNode_Old():  # возможно эффективнее будет хранить типы узлов в статических полях-числах
-    def __init__(self, type_='const', value=None, children: Optional[List[SyntaxTreeNode]] = None):
-        self.type = type_
-        self.value = value
-        self.children = children
-        self.acc = None
-    
-    def print(self, level: int = 0):
-        print(' '*level, ' ', self)
-        if self.children is not None:
-            if isinstance(self.children, SyntaxTreeNode):
-                self.children.print(level + 1)
-            elif isinstance(self.children, str):
-                print(' ' * (level + 1), self.children)
-            elif isinstance(self.children, list):
-                for i in range(len(self.children)):
-                    if isinstance(self.children[i], str):
-                        print(' ' * (level + 1), self.children[i])
-                    elif self.children[i]:    
-                        self.children[i].print(level + 1)
-            elif isinstance(self.children, dict):
-                for key, value in self.children.items():
-                    print(' '*(level + 1), key)
-                    if isinstance(value, str):
-                        print(' '*(level + 2), value)
-                    elif isinstance(value, SyntaxTreeNode):
-                        value.print(level + 2)'''
-
-
 class Parser:
     tokens = Lexer.tokens
     
@@ -84,7 +55,12 @@ class Parser:
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, debug=False)
         self._functions: Dict[str, SyntaxTreeNode] = dict()
+        # remake it:
+        # self.functions
+        #   scope (outer function name)
+        #       inner functions
         self.acc = None
+        self.scope = None
         
     def parse(self, s) -> Tuple[SyntaxTreeNode, Dict]:
         try:
@@ -290,13 +266,16 @@ class Parser:
 
     def p_function(self, p):
         '''function : FUNCTION IDENT OBRACKET IDENT CBRACKET DO NL stmt_list DONE'''
-        self._functions[p[2]] = SyntaxTreeNode(
-            'function',
-            children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)), 'body': p[8]},
-            lineno=p.lineno(1),
-            lexpos=p.lexpos(1)
+        p[0] = SyntaxTreeNode(
+                'function_description',
+                value=p[2],
+                children={'param': SyntaxTreeNode('ident', p[4], lineno=p.lineno(4), lexpos=p.lexpos(4)), 'body': p[8]},
+                lineno=p.lineno(1),
+                lexpos=p.lexpos(1)
         )
-        p[0] = SyntaxTreeNode('function_description', value=p[2], lineno=p.lineno(1), lexpos=p.lexpos(1))
+        self._functions[p[2]] = p[0]
+
+
 
     ''' def p_error(self, p):
         if not p:

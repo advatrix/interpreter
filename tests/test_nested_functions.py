@@ -32,4 +32,5 @@ def test_scope():
     intr = interpreter.Interpreter()
     intr.interpret(program)
     assert 'inner' not in intr.sym_table[0].keys()
+    assert len(intr.errors) == 1
 

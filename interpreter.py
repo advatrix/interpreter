@@ -152,15 +152,15 @@ class Interpreter:
     
     """
        
-    def __init__(self, parser=parser.Parser(), caster=CastManager()):
+    def __init__(self):
         """
         Object fields:
         self.sym_table -- scoped symbol table: array of symbol tables,
             first index -- scope depth (used in function calls since functions are isolated scopes), 0 by default
             second index -- symbol name as a key in 'symbol table' dict
         """
-        self.parser = parser
-        self.cast = caster
+        self.parser = parser.Parser()
+        self.cast = CastManager()
         self.map = None
         self.program = None
         self.sym_table = [dict()]
@@ -192,12 +192,13 @@ class Interpreter:
         self.program = program  # Program code
         self.tree, self.funcs = self.parser.parse(program)
         self.argv = argv
+        self._interpret_node(self.tree)
         # self._interpret_node(self.tree)
-        if 'main' not in self.funcs.keys():
+        if 'main' not in self.sym_table[0].keys():
             self._error('nomain')
         else:
             try:
-                self._main(self.funcs['main'])
+                self._main(self.sym_table[0]['main'])
             except StopExecution:
                 pass
         for err in self.errors:
@@ -271,11 +272,17 @@ class Interpreter:
         elif node.type == 'unnamed_function':
             return self._unnamed_function(node)
         elif node.type == 'function_description':
-            pass
+            self._function_description(node)
         elif node.type == 'assignment':
             self._assignment(node)
         elif node.type == 'return':
             raise StopExecution
+
+    def _function_description(self, node: parser.SyntaxTreeNode):
+        if node.value not in self.sym_table[self.scope].keys():
+            self.sym_table[self.scope][node.value] = node
+        else:
+            self._error('redecl', node)
 
     def _main(self, node: parser.SyntaxTreeNode):
         if self.argv:
@@ -324,7 +331,7 @@ class Interpreter:
         param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
             else self._interpret_node(node.children)
         func_name = node.value
-        if func_name not in self.funcs.keys() and func_name not in self.sym_table[self.scope].keys():
+        if func_name not in self.sym_table[self.scope].keys():
             self._error('unfunc', node)
             return
         self.scope += 1
