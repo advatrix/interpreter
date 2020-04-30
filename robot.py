@@ -7,28 +7,27 @@ class Robot:
     def __init__(self, x, y, z, rot, capacity, map_):
         # Rotation:
         #  -1 <-- -->+1
-        #   --------
-        #  /   0    \
-        # /5        1\
+        #    --------
+        #   /   0    \
+        #  /5        1\
         # /            \
         # \            /
-        # \4        2/
-        #  \   3    /
-        #   --------
+        #  \4        2/
+        #   \   3    /
+        #    --------
         #
         #   Coordinates:
-        #   ^ X  ^ Y
+        #   ^ Y  ^ Z
         #   |   /
         #   |  /
         #   | /
         #   |/
-        #   /\
-        #     \
-        #      V Z
+        #   /
+        #
+        #
         #
         self.x = x
         self.y = y
-        self.z = z
         self.rot = rot
         self.capacity = capacity
         self.slots = []
@@ -44,17 +43,17 @@ Capacity: {self.sum()}/{self.capacity}'''
 
     def next(self):
         if self.rot == 0:
-            return self.map[self.y + 1][self.x][self.z - 1]
+            return self.map[self.y + 1][self.x]
         if self.rot == 1:
-            return self.map[self.y][self.x + 1][self.z - 1]
+            return self.map[self.y][self.x + 1]
         if self.rot == 2:
-            return self.map[self.y - 1][self.x + 1][self.z]
+            return self.map[self.y - 1][self.x + 1]
         if self.rot == 3:
-            return self.map[self.y - 1][self.x][self.z + 1]
+            return self.map[self.y - 1][self.x]
         if self.rot == 4:
-            return self.map[self.y][self.x - 1][self.z + 1]
+            return self.map[self.y][self.x - 1]
         if self.rot == 5:
-            return self.map[self.y + 1][self.x - 1][self.z]
+            return self.map[self.y + 1][self.x - 1]
 
     def forward(self, dist):  # what if cell = undef??
         for i in range(dist):

@@ -206,7 +206,6 @@ class Interpreter:
         for err in self.errors:
             sys.stderr.write(err)
 
-    
     def _interpret_node(self, node):
         if node is None:
             return
@@ -293,8 +292,11 @@ class Interpreter:
     def _assignment(self, node: parser.SyntaxTreeNode):
         var = self._interpret_node(node.children[0])
         expr = self._interpret_node(node.children[1])
-        var.type = expr.type
-        var.value = expr.value
+        if var is None:
+            self._error('undecl', node.children[0])
+        else:
+            var.type = expr.type
+            var.value = expr.value
 
     def _variable(self, node):
         var = node.value
@@ -302,7 +304,7 @@ class Interpreter:
 
     def _indexing(self, node) -> Var:
         index = self.cast.cast('int', self._interpret_node(node.children))
-        if self._rval:  # need to return only value
+        if self._rval:  # return only value
             var = self._find_var(node.value)
             if var:
                 try:
@@ -326,7 +328,7 @@ class Interpreter:
             else self._interpret_node(node.children)
         func_name = node.value
         if func_name not in self.funcs.keys() and func_name not in self.sym_table[self.scope].keys():
-            self._error('name', node)
+            self._error('unfunc', node)
             return
         self.scope += 1
         self.sym_table.append(dict())
@@ -633,12 +635,15 @@ class Interpreter:
         if err_type == 'nomain':
             self.errors.append('Error: no main function')
         elif err_type == 'redecl':
-            self.errors.append(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is already declared\n')
+            self.errors.append(
+                f'RedeclError: variable "{node.value}" at {node.lineno}:{node.lexpos} is already declared\n')
         elif err_type == 'undecl':
-            self.errors.append(f'variable "{node.value}" at {node.lineno}:{node.lexpos} is not defined\n')
+            self.errors.append(f'UndeclError: variable "{node.value}" at {node.lineno}:{node.lexpos} is not defined\n')
         elif err_type == 'unfunc':
-            self.errors.append(f'Unknown function call "{node.value}" at {node.lineno}:{node.lexpos}\n')
+            self.errors.append(
+                f'UnknownFuncError: Unknown function call "{node.value}" at {node.lineno}:{node.lexpos}\n')
         elif err_type == 'cast':
-            self.errors.append(f'failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
+            self.errors.append(f'CastError: failed to cast variable "{node.value}" at {node.lineno}:{node.lexpos}\n')
         elif err_type == 'value':
-            self.errors.append(f'incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
+            self.errors.append(
+                f'ValueError: incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
