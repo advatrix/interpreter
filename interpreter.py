@@ -186,7 +186,7 @@ class Interpreter:
         if robot_mode:
             self.robot = robot.Robot(robot_description['x'],
                                      robot_description['y'],
-                                     robot_description['rot'],
+                                     robot_description['rotation'],
                                      robot_description['capacity'],
                                      map_description)
         self.program = program  # Program code
@@ -203,7 +203,7 @@ class Interpreter:
         for err in self.errors:
             sys.stderr.write(err)
 
-    def _interpret_node(self, node):
+    def _interpret_node(self, node: parser.SyntaxTreeNode):
         if node is None:
             return
         if node.type == 'program':
@@ -249,7 +249,7 @@ class Interpreter:
             if node.value.lower() == 'forward':
                 return self._forward(node.children)
             elif node.value.lower() == 'backward':
-                return self._backward(node.childen)
+                return self._backward(node.children)
             elif node.value.lower() == 'left':
                 self._left()
             elif node.value.lower() == 'right':
@@ -389,17 +389,17 @@ class Interpreter:
 
     # ROBOT OPERATORS #
     
-    def _forward(self, node):
+    def _forward(self, node) -> Var:
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            self.robot.forward(expr)
+            return Var('bool', self.robot.forward(expr.value))
         except CastError:
             self._error('cast', node)
     
-    def _backward(self, node):
+    def _backward(self, node) -> Var:
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            self.robot.backward(expr)
+            return Var('bool', self.robot.backward(expr.value))
         except CastError:
             self._error('cast', node)
             
@@ -412,14 +412,14 @@ class Interpreter:
     def _load(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            return Var('bool', self.robot.load(expr))
+            return Var('bool', self.robot.load(expr.value))
         except CastError:
             self._error('cast', node)
         
     def _drop(self, node):
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
-            return Var('bool', self.robot.drop(expr))
+            return Var('bool', self.robot.drop(expr.value))
         except CastError:
             self._error('cast', node)
             
