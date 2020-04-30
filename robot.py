@@ -39,7 +39,7 @@ Slots: {self.slots}
 Capacity: {self.sum()}/{self.capacity}'''
 
     def sum(self):
-        return sum([box.weight for box in self.slots if box])
+        return sum([box.weight for box in self.slots.values() if box])
 
     def next(self) -> Cell:
         """Return a Cell towards robot"""
@@ -76,9 +76,9 @@ Capacity: {self.sum()}/{self.capacity}'''
             if self.next().type.type in ['box', 'wall']:
                 if not i:
                     return 'false'
-                elif i < dist - 1:
+                elif i < dist:
                     return 'undef'
-                return 'true'
+                break
             if self.rot == 0:
                 self.y += 1
             elif self.rot == 1:
@@ -93,15 +93,16 @@ Capacity: {self.sum()}/{self.capacity}'''
             elif self.rot == 5:
                 self.y += 1
                 self.x -= 1
+        return 'true'
 
     def backward(self, dist) -> str:
         for i in range(dist):
             if self.prev().type.type in ['box', 'wall']:
                 if not i:
                     return 'false'
-                elif i < dist - 1:
+                elif i < dist:
                     return 'undef'
-                return 'true'
+                break
             if self.rot == 0:
                 self.y -= 1
             elif self.rot == 1:
@@ -116,16 +117,17 @@ Capacity: {self.sum()}/{self.capacity}'''
             elif self.rot == 5:
                 self.y -= 1
                 self.x += 1
+        return 'true'
 
     def left(self) -> str:
         if self.sum() < self.capacity:
-            self.rot = (self.rot + 1) % 6
+            self.rot = (self.rot - 1) % 6
             return 'true'
         return 'false'
 
     def right(self) -> str:
         if self.sum() < self.capacity:
-            self.rot = (2 * self.rot - 1) % 6
+            self.rot = (self.rot + 1) % 6
             return 'true'
         return 'false'
 
@@ -139,6 +141,8 @@ Capacity: {self.sum()}/{self.capacity}'''
         return 'true'
 
     def drop(self, expr: int) -> str:
+        if expr not in self.slots.keys():
+            return 'undef'
         if self.next().type.type == 'empty' and expr in self.slots.keys():
             self.next().type = self.slots[expr]
             del self.slots[expr]
@@ -152,9 +156,8 @@ Capacity: {self.sum()}/{self.capacity}'''
         x = self.x
         y = self.y
         while True:
-            i += 1
-            if self.next().type.type in ['box', 'wall']:
-                return i - 1
+            if self.map[x][y].type.type in ['box', 'wall']:
+                return i
             if self.rot == 0:
                 y += 1
             elif self.rot == 1:
@@ -169,6 +172,7 @@ Capacity: {self.sum()}/{self.capacity}'''
             elif self.rot == 5:
                 y += 1
                 x -= 1
+            i += 1
 
     def test(self):
         i = 0
@@ -176,8 +180,8 @@ Capacity: {self.sum()}/{self.capacity}'''
         y = self.y
         while True:
             i += 1
-            next_ = self.next()
-            if next_.type.type in ['box', 'wall']:
+            next_ = self.map[x][y]
+            if next_.type.type in ['box', 'wall', 'exit']:
                 return next_.type.type
             if self.rot == 0:
                 y += 1

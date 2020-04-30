@@ -1,6 +1,5 @@
 import json
 import cell
-import robot
 import os.path
 
 

@@ -169,27 +169,26 @@ class Interpreter:
         self._rval = False  # rvalue flag
         self.errors = []
         
-    def interpret(self, program: str, map_description: list = None, initial_conditions: Optional[NamedTuple] = None,
+    def interpret(self, program: str, map_description: list = None, robot_description: Optional[dict] = None,
                   robot_mode: bool = False, argv: list = None):
         """
         Interpret a program
 
         Parameters:
             program(str): program text
-            map_description(list): a three-dimensional array of Cell objects
-            initial_conditions(NamedTuple): initial conditions for robot (position, rotation etc)
+            map_description(dict): a two-dimensional dict of cells
+            robot_description(dict): initial conditions for robot (position, rotation etc)
             robot_mode(bool): if True, interpret a program for robot, otherwise interpret abstract code
             argv(list[int]): console params vector
         """
         # TODO: robot implementation
         self.map = map_description  # Three-dimensional array of Cell objects
         if robot_mode:
-            self.robot = robot.Robot(initial_conditions[x],
-                               initial_conditions[y],
-                               initial_conditions[z],
-                               initial_conditions[rot],
-                               initial_conditions[capacity],
-                               map_description)
+            self.robot = robot.Robot(robot_description['x'],
+                                     robot_description['y'],
+                                     robot_description['rot'],
+                                     robot_description['capacity'],
+                                     map_description)
         self.program = program  # Program code
         self.tree, self.funcs = self.parser.parse(program)
         self.argv = argv
@@ -405,10 +404,10 @@ class Interpreter:
             self._error('cast', node)
             
     def _left(self):
-        self.robot.left()
+        return Var('bool', self.robot.left())
         
     def _right(self):
-        self.robot.right()
+        return Var('bool', self.robot.right())
         
     def _load(self, node):
         try:

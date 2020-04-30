@@ -5,7 +5,7 @@ import interpreter
 import json_convert
 
 
-def execute(program_file: str, map_file: str, argv: str, output_file: str) -> dict:
+def execute(program_file: str, map_file: str, argv: str, output_file: str):
     if os.path.isfile(program_file) and os.path.isfile(map_file) and os.path.isfile(output_file):
         map_dict, robot = json_convert.convert(map_file)
         with open(program_file, 'r') as pr_f:
