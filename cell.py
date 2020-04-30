@@ -35,11 +35,10 @@ class Box:
 
 
 class Cell:
-    def __init__(self, x, y, z, type_):
+    def __init__(self, x, y, type_):
         self.x = x
         self.y = y
-        self.z = z
         self.type = type_
 
     def __repr__(self):
-        return f'{self.x} {self.y} {self.z} : {self.type}'
+        return f'{self.x} {self.y} : {self.type}'

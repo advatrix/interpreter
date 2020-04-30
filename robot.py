@@ -4,7 +4,7 @@ from typing import List
 
 
 class Robot:
-    def __init__(self, x, y, z, rot, capacity, map_):
+    def __init__(self, x, y, rot, capacity, map_):
         # Rotation:
         #  -1 <-- -->+1
         #    --------
@@ -17,7 +17,7 @@ class Robot:
         #    --------
         #
         #   Coordinates:
-        #   ^ Y  ^ Z
+        #   ^ Y  ^ X
         #   |   /
         #   |  /
         #   | /
@@ -30,160 +30,141 @@ class Robot:
         self.y = y
         self.rot = rot
         self.capacity = capacity
-        self.slots = []
+        self.slots = dict()
         self.map = map_
 
     def __repr__(self):
-        return f'''({self.x}, {self.y}, {self.z}):{self.rot}
+        return f'''({self.x}, {self.y}):{self.rot}
 Slots: {self.slots}
 Capacity: {self.sum()}/{self.capacity}'''
 
     def sum(self):
         return sum([box.weight for box in self.slots if box])
 
-    def next(self):
+    def next(self) -> Cell:
+        """Return a Cell towards robot"""
         if self.rot == 0:
-            return self.map[self.y + 1][self.x]
+            return self.map[self.x][self.y+1]
         if self.rot == 1:
-            return self.map[self.y][self.x + 1]
+            return self.map[self.x+1][self.y]
         if self.rot == 2:
-            return self.map[self.y - 1][self.x + 1]
+            return self.map[self.x+1][self.y-1]
         if self.rot == 3:
-            return self.map[self.y - 1][self.x]
+            return self.map[self.x][self.y-1]
         if self.rot == 4:
-            return self.map[self.y][self.x - 1]
+            return self.map[self.x-1][self.y]
         if self.rot == 5:
-            return self.map[self.y + 1][self.x - 1]
+            return self.map[self.x-1][self.y+1]
 
-    def forward(self, dist):  # what if cell = undef??
+    def prev(self) -> Cell:
+        """Return a Cell backwards robot"""
+        if self.rot == 0:
+            return self.map[self.x][self.y-1]
+        if self.rot == 1:
+            return self.map[self.x-1][self.y]
+        if self.rot == 2:
+            return self.map[self.x-1][self.y+1]
+        if self.rot == 3:
+            return self.map[self.x][self.y+1]
+        if self.rot == 4:
+            return self.map[self.x+1][self.y]
+        if self.rot == 5:
+            return self.map[self.x+1][self.y-1]
+
+    def forward(self, dist) -> str:  # what if cell = undef??
         for i in range(dist):
+            if self.next().type.type in ['box', 'wall']:
+                if not i:
+                    return 'false'
+                elif i < dist - 1:
+                    return 'undef'
+                return 'true'
             if self.rot == 0:
-                _next = self.map[self.y + 1][self.x][self.z - 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.y += 1
-                self.z -= 1
             elif self.rot == 1:
-                _next = self.map[self.y][self.x + 1][self.z - 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.x += 1
-                self.z -= 1
             elif self.rot == 2:
-                _next = self.map[self.y - 1][self.x + 1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.x += 1
                 self.y -= 1
             elif self.rot == 3:
-                _next = self.map[self.y - 1][self.x][self.z + 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z += 1
                 self.y -= 1
             elif self.rot == 4:
-                _next = self.map[self.y][self.x - 1][self.z + 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z += 1
                 self.x -= 1
             elif self.rot == 5:
-                _next = self.map[self.y + 1][self.x - 1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.y += 1
                 self.x -= 1
 
-    def backward(self, dist):
+    def backward(self, dist) -> str:
         for i in range(dist):
+            if self.prev().type.type in ['box', 'wall']:
+                if not i:
+                    return 'false'
+                elif i < dist - 1:
+                    return 'undef'
+                return 'true'
             if self.rot == 0:
-                _next = self.map[self.y - 1][self.x][self.z + 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.y -= 1
-                self.z += 1
             elif self.rot == 1:
-                _next = self.map[self.y][self.x - 1][self.z + 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.x -= 1
-                self.z += 1
             elif self.rot == 2:
-                _next = self.map[self.y + 1][self.x - 1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.x -= 1
                 self.y += 1
             elif self.rot == 3:
-                _next = self.map[self.y + 1][self.x][self.z - 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z -= 1
                 self.y += 1
             elif self.rot == 4:
-                _next = self.map[self.y][self.x + 1][self.z - 1]
-                if _next.type.type in ['box', 'wall']:
-                    return
-                self.z -= 1
                 self.x += 1
             elif self.rot == 5:
-                _next = self.map[self.y - 1][self.x + 1][self.z]
-                if _next.type.type in ['box', 'wall']:
-                    return
                 self.y -= 1
                 self.x += 1
 
-    def left(self):
+    def left(self) -> str:
         if self.sum() < self.capacity:
             self.rot = (self.rot + 1) % 6
+            return 'true'
+        return 'false'
 
-    def right(self):
+    def right(self) -> str:
         if self.sum() < self.capacity:
             self.rot = (2 * self.rot - 1) % 6
+            return 'true'
+        return 'false'
 
     def load(self, expr: int) -> str:
         if self.next().type.type != 'box':
             return 'undef'
-        if expr > len(self.slots):
-            self.slots += [None for _ in range(expr - len(self.slots) + 1)]
-            self.slots[expr] = self.next().type
-            return 'true'
-        elif self.slots[expr]:
+        if expr in self.slots.keys():
             return 'false'
+        self.slots[expr] = self.next().type
+        self.next().type = Empty()
+        return 'true'
 
     def drop(self, expr: int) -> str:
-        if self.next.type.type == 'empty' and self.slots[expr]:
-            self.next.type = self.slots[expr]
-            self.slots[expr] = None
+        if self.next().type.type == 'empty' and expr in self.slots.keys():
+            self.next().type = self.slots[expr]
+            del self.slots[expr]
             return 'true'
-        elif self.next.type.type != 'empty':
+        elif self.next().type.type != 'empty':
             return 'false'
-        else:
-            return 'undef'
+        return 'undef'
 
     def look(self):
         i = 0
         x = self.x
         y = self.y
-        z = self.z
         while True:
             i += 1
-            if self.map[x][y][z].type.type in ['box', 'wall']:
-                return i
+            if self.next().type.type in ['box', 'wall']:
+                return i - 1
             if self.rot == 0:
                 y += 1
-                z -= 1
             elif self.rot == 1:
                 x += 1
-                z -= 1
             elif self.rot == 2:
                 x += 1
                 y -= 1
             elif self.rot == 3:
-                z += 1
                 y -= 1
             elif self.rot == 4:
-                z += 1
                 x -= 1
             elif self.rot == 5:
                 y += 1
@@ -193,25 +174,21 @@ Capacity: {self.sum()}/{self.capacity}'''
         i = 0
         x = self.x
         y = self.y
-        z = self.z
         while True:
             i += 1
-            if self.map[x][y][z].type.type in ['box', 'wall']:
-                return self.map[x][y][z].type.type
+            next_ = self.next()
+            if next_.type.type in ['box', 'wall']:
+                return next_.type.type
             if self.rot == 0:
                 y += 1
-                z -= 1
             elif self.rot == 1:
                 x += 1
-                z -= 1
             elif self.rot == 2:
                 x += 1
                 y -= 1
             elif self.rot == 3:
-                z += 1
                 y -= 1
             elif self.rot == 4:
-                z += 1
                 x -= 1
             elif self.rot == 5:
                 y += 1

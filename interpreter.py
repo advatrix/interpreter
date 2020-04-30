@@ -12,11 +12,9 @@ from __future__ import annotations
 import sys
 import parser
 import random
-from typing import List, NamedTuple, Optional, Tuple
-from copy import deepcopy
+from typing import List, NamedTuple, Optional
 import robot
 import cell
-import map
 
 
 class Var:
