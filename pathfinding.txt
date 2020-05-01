@@ -1,0 +1,134 @@
+function traverse_obstacle(args) do
+    boxes := args(0)
+    turn := args(1)
+    int dist
+    while turn do
+
+        if test = exit do
+            dist := look + 1
+            forward dist
+            return
+        done
+
+        right
+        turn := turn + 1
+
+        if test = exit do
+            dist := look + 1
+            forward dist
+            return
+        done
+
+        if look = 0 do
+            if test = box do
+                load boxes
+
+                if left do
+                    boxes := boxes + 1
+                    right
+                    forward 1
+                done
+                eldef do
+                    drop boxes
+                    left
+
+                    if look = 0 do
+                        if test = box do
+                            load boxes
+
+                            if left do
+                                boxes := boxes + 1
+                                right
+                                forward 1
+                            done
+                            eldef do
+                                left
+                                turn := turn - 1
+                            done
+                        done
+                        if test = wall do
+                            left
+                            turn := turn - 1
+                        done
+                    done
+                    eldef do
+                        forward 1
+                    done
+                done
+            done
+            eldef do
+                left
+                turn := turn - 1
+
+                if look = 0 do
+                    if test = box do
+                        load boxes
+
+                        if left do
+                            boxes := boxes + 1
+                            right
+                            forward 1
+                        done
+                        eldef do
+                            left
+                            turn := turn - 1
+                        done
+                    done
+                    if test = wall do
+                        left
+                        turn := turn - 1
+                    done
+                done
+                eldef do
+                    forward 1
+                done
+            done
+        done
+        eldef do
+            forward 1
+        done
+    done
+done
+
+
+function drop_boxes(boxes) do
+    while boxes do
+        right
+        right
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right
+        right
+        if forward 1 = false do
+            return
+        done
+    done
+done
+
+function main(argv) do
+    int boxes := 0, turn := 0, argspack
+    while test ^ exit do
+        if look do
+            if boxes do
+                drop_boxes(boxes)
+            done
+            forward look
+        done
+        eldef do
+            left
+            turn := turn - 1
+            argspack := [boxes, turn]
+            traverse_obstacle(argspack)
+        done
+    done
+    forward look
+done

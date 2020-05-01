@@ -287,15 +287,15 @@ def test_look():
     rot = 0
     capacity = 15
     r = robot.Robot(x, y, rot, capacity, deepcopy(map_dict))
-    assert r.look() == 4
-    r.forward(1)
     assert r.look() == 3
     r.forward(1)
     assert r.look() == 2
     r.forward(1)
     assert r.look() == 1
+    r.forward(1)
+    assert r.look() == 0
     r.backward(2)
-    assert r.look() == 3
+    assert r.look() == 2
 
 
 def test_test():
@@ -304,13 +304,13 @@ def test_test():
     rot = 0
     capacity = 15
     r = robot.Robot(x, y, rot, capacity, deepcopy(map_dict))
-    assert r.test() == 'wall'
+    assert r.test().type == 'wall'
     r.right()
     r.right()
-    assert r.test() == 'box'
+    assert r.test().type == 'box'
     r.x = 2
     r.y = -2
     r.rot = 1
-    assert r.test() == 'exit'
+    assert r.test().type == 'exit'
     r.backward(2)
-    assert r.test() == 'exit'
+    assert r.test().type == 'exit'

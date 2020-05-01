@@ -23,83 +23,155 @@ int S := 3
 int SW := 4
 int NW := 5
 
+Алгоритм:
+
+повороты считаются. Если счётчик поворотов равен 0, то робот успешно объехал препятствие и может ехать дальше
+
+робот старается ехать в приоритетном направлении (0, север).
+Если он встречает препятствие:
+    повернуть налево
+    вызвать функицю обойти_препятствие():
+        если это коробка, и если её взять, то грузоподъёмность не превысится, берём её
+        если эта коробка слишком тяжёлая, или это стена, объезжаем её:
+            на каждом шаге объезда (пока поворот не равен 0) робот делает следующее:
+                если справа нет препятствия (тяжелая коробка считается за препятствие), повернуть направо и пройти 1 шаг
+                иначе если спереди нет препятствия, пройти 1 шаг вперёд
+                иначе повернуть налево
+когда он обошёл препятствие, надо расставлять коробки. Для этого на каждом шагу робот пытается расставить коробки
+в направлениях 2, 3 и 4.
 
 
-
+function traverse_obstacle(args) do
+    boxes := args(0)
+    turn := arg(1)
+    int dist
+    while turn do
     
+        if test = exit do
+            dist := look + 1
+            forward dist 
+            return
+        done
+        
+        right
+        turn := turn + 1
+        
+        if test = exit do
+            dist := look + 1
+            forward look
+            return
+        done
+        
+        if look = 0 do
+            if test = box do // . . B
+                load boxes
 
-function find_exit(robot) do
-    int boxes := 0
-    int turn := 0
-    while map(robot(0))(robot(1))(robot(2)) ^ exit do // как задать условие выхода?
-        if turn do // если движемся не в приоритетном направлении
-            right
-            if look ^ 0 do
-                turn := turn + 1
-                forward look
-            done
-            eldef do
-                left
-                if look ^ 0 do
-                    forward look
+                if left do
+                    boxes := boxes + 1
+                    right
+                    forward 1
                 done
                 eldef do
+                    drop boxes // . . HB
                     left
-                    turn := turn - 1
-                done
-            done
-        done
-        eldef do // если движемся в приоритетном направлении
-            if look = 0 do // встретили препятствие в приоритетном направлении
-                if test = wall do // это препятствие нельзя подвинуть
-                    left
-                    turn := turn + 1
-                done
-                eldef do // это коробка
-                    if load boxes do
-                        boxes := boxes + 1 // попробуем куда-нибудь переставить коробку
-                        left
-                        while drop boxes - 1 do
-                            left
-                            turn := turn + 1
-                        finish do
-                            while turn do
+                    
+                    if look = 0 do
+                        if test = box do // . B HB
+                            load boxes
+                            
+                            if left do 
+                                boxes := boxes + 1
                                 right
+                                forward 1 // . ^ HB
+                            done
+                            eldef do // . HB HB
+                                left
                                 turn := turn - 1
                             done
-                        done
-                    done
-                    eldef do
-                        left
-                        turn := turn + 1
-                    done
-                done
-            done
-            eldef do
-                while boxes do
-                    while drop boxes ^ false + left ^ 6 = 2 do
-                        left
-                        turn := turn + 1
-                    finish do
-                        if turn ^ 6 do
-                            boxes := boxes - 1
-                        done
-                        while turn do
-                            right
+                        if test = wall do // . W HB
+                            left
                             turn := turn - 1
                         done
                     done
-                finish forward look
+                    eldef do // . ^ HB
+                        forward 1
+                    done
                 done
             done
+            eldef do // . . W
+                left
+                turn := turn - 1
+                
+                if look = 0 do
+                        if test = box do // . B W
+                            load boxes
+                            
+                            if left do 
+                                boxes := boxes + 1
+                                right
+                                forward 1 // . ^ W
+                            done
+                            eldef do // . HB W
+                                left
+                                turn := turn - 1
+                            done
+                        if test = wall do // . W W
+                            left
+                            turn := turn - 1
+                        done
+                    done
+                    eldef do // . ^ W
+                        forward 1
+                    done
+                done
+                eldef do
+                    forward 1
+                done
+            done
+        eldef do
+            forward 1
         done
     done
 done
-                        
-                    
-                        
-                    
-                
-                
-            
-            
+
+
+function drop_boxes(boxes) do
+    while boxes do
+        right
+        right
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right 
+        if drop boxes do
+            boxes := boxes - 1
+        done
+        right
+        right
+        if forward 1 = false do
+            return
+        done
+    done
+done
+        
+function main(argv) do
+    int boxes := 0, turn := 0
+    while test ^ exit do
+        if look do
+            if boxes do
+                drop_boxes(boxes)
+            done
+            forward look
+        eldef do
+            left
+            turn := turn - 1
+            argspack := [boxes, turn]
+            traverse_obstacle(argspack)
+        done
+    done
+    forward look
+done

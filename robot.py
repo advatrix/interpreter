@@ -34,7 +34,7 @@ class Robot:
         self.map = map_
 
     def __repr__(self):
-        return f'''({self.x}, {self.y}):{self.rot}
+        return f'''(x:{self.x}, y:{self.y}), rot:{self.rot}
 Slots: {self.slots}
 Capacity: {self.sum()}/{self.capacity}'''
 
@@ -152,11 +152,11 @@ Capacity: {self.sum()}/{self.capacity}'''
         return 'undef'
 
     def look(self):
-        i = 0
+        i = -1
         x = self.x
         y = self.y
         while True:
-            if self.map[x][y].type.type in ['box', 'wall']:
+            if self.map[x][y].type.type in ['box', 'wall', 'exit']:
                 return i
             if self.rot == 0:
                 y += 1
@@ -174,7 +174,7 @@ Capacity: {self.sum()}/{self.capacity}'''
                 x -= 1
             i += 1
 
-    def test(self):
+    def test(self) -> CellType:
         i = 0
         x = self.x
         y = self.y
@@ -182,7 +182,7 @@ Capacity: {self.sum()}/{self.capacity}'''
             i += 1
             next_ = self.map[x][y]
             if next_.type.type in ['box', 'wall', 'exit']:
-                return next_.type.type
+                return next_.type
             if self.rot == 0:
                 y += 1
             elif self.rot == 1:

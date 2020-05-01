@@ -98,9 +98,9 @@ class CastManager:
     
     @staticmethod
     def cell_to_bool(value):
-        if value.value in ['empty', 'exit']:
+        if value.value.type in ['empty', 'exit']:
             return Var('bool', 'true')
-        elif value.value in ['box', 'wall']:
+        elif value.value.type in ['box', 'wall']:
             return Var('bool', 'false')
         return value
     
@@ -117,7 +117,7 @@ class CastManager:
         elif value.value.type == 'wall':
             return Var('int', 'inf')
         elif value.value.type == 'box':
-            return Var('int', value.weight)
+            return Var('int', value.value.weight)
         elif value.value.type == 'exit':
             return Var('int', '-inf')
         elif value.value.type == 'undef':
@@ -252,9 +252,9 @@ class Interpreter:
             elif node.value.lower() == 'backward':
                 return self._backward(node.children)
             elif node.value.lower() == 'left':
-                self._left()
+                return self._left()
             elif node.value.lower() == 'right':
-                self._right()
+                return self._right()
             elif node.value.lower() == 'load':
                 return self._load(node.children)
             elif node.value.lower() == 'drop':
@@ -277,6 +277,11 @@ class Interpreter:
             self._assignment(node)
         elif node.type == 'return':
             raise StopExecution
+        elif node.type == 'array':
+            ret = []
+            self._array_from_tree(node, ret)
+            expr_array = [self._interpret_node(expr) for expr in ret]
+            return Var(expr_array[0].type, expr_array)
 
     def _function_description(self, node: parser.SyntaxTreeNode):
         if node.value not in self.sym_table[self.scope].keys():
@@ -364,6 +369,7 @@ class Interpreter:
             self._error('name', node)
                 
     def _if(self, node):
+        cond_value = self._interpret_node(node.children['condition'])
         condition = self.cast.cast('bool', self._interpret_node(node.children['condition'])).value
         if condition == 'true':
             self._interpret_node(node.children['body'])
@@ -518,6 +524,8 @@ class Interpreter:
     def _eq(self, op1: parser.SyntaxTreeNode, op2: parser.SyntaxTreeNode) -> Var:
         expr1 = self._interpret_node(op1)
         expr2 = self.cast.cast(expr1.type, self._interpret_node(op2))
+        if expr1.type == 'cell':
+            return Var('bool', 'true') if expr1.value.type == expr2.value.type else Var('bool', 'false')
         if expr1.value == 'nan' or expr2.value == 'nan':
             return Var('bool', 'undef')
         return Var('bool', 'true') if expr1.value == expr2.value else Var('bool', 'false')
@@ -598,7 +606,9 @@ class Interpreter:
         # expr = deepcopy(expr)
         var = self._find_var(variable)
         if var:
-            if isinstance(expr.value, list):
+            if expr is None:
+                var.value = self.cast.cast(var.type, Var('bool', 'undef')).value
+            elif isinstance(expr.value, list):
                 self._assign_array(_type, variable, expr.value, casting)
             else:
                 if var.type in ['var', expr.type] or casting:

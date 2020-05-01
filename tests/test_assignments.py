@@ -262,3 +262,18 @@ def test_intr_reassign_prog():
     tree, _ = intr.parser.parse('int a := 1\na := a + 1\n')
     intr._interpret_node(tree)
     assert intr.sym_table[0]['a'].value == 2
+
+
+def test_intr_assign_undecl():
+    program = """
+    function main(argv) do
+        bool a := b
+        int c := b
+        cell d := b
+    done
+    """
+    intr = interpreter.Interpreter()
+    intr.interpret(program)
+    assert intr.sym_table[0]['a'].value == 'undef'
+    assert intr.sym_table[0]['c'].value == 'nan'
+    assert intr.sym_table[0]['d'].value.type == 'undef'

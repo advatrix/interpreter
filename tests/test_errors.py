@@ -57,3 +57,21 @@ def test_cast():
     intr.interpret(program)
     assert len(intr.errors) == 1
     assert intr.errors[0].split()[0] == 'CastError:'
+
+
+def test_multiple_errors():
+    intr = interpreter.Interpreter()
+    program = """
+    function main(argv) do
+        cell a := true
+        b := a
+        unknown(a)
+        cell a := 5
+    done
+    """
+    intr.interpret(program)
+    assert len(intr.errors) == 4
+    assert intr.errors[0].split()[0] == 'CastError:'
+    assert intr.errors[1].split()[0] == 'UndeclError:'
+    assert intr.errors[2].split()[0] == 'UnknownFuncError:'
+    assert intr.errors[3].split()[0] == 'RedeclError:'

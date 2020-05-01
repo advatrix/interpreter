@@ -1,7 +1,0 @@
-while true True do
-done
-some_long_identificator
-s
-int cell := 3 + r((w) ^ ^=
-q 35ertu function
-t true

@@ -15,9 +15,6 @@ def convert(file: str) -> tuple:
             data = json.load(f)
             map_json_data = data["map"]
             robot_json_data = data["robot"]
-            print(data)
-            print(map_json_data)
-            print(robot_json_data)
             map_dict = map_from_json(map_json_data)
             return map_dict, robot_json_data  # no need to convert robot_json_data
     else:
@@ -33,8 +30,6 @@ def map_from_json(data: dict) -> dict:
     ret = dict()
     for strkey, value in data.items():
         key = int(strkey)
-        print(key)
-        print(value)
         ret[key] = dict()
         for strk, v in value.items():
             k = int(strk)
@@ -49,7 +44,6 @@ def map_from_json(data: dict) -> dict:
                 ret[key][k] = cell.Cell(key, k, cell.Exit())
             else:
                 raise ValueError
-    print(ret)
     return ret
 
 
