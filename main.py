@@ -30,12 +30,12 @@ def execute(program_file: str, map_file: str, argv: str, output_file: str):
 
 if __name__ == '__main__':
     sys.stdout.write('Program path: ')
-    prog = 'pathfinding.txt'
+    prog = input()
     sys.stdout.write('Data path: ')
-    data = 'map.json'
+    data = input()
     sys.stdout.write('Argv: ')
-    argv = '1'
+    argv = input()
     sys.stdout.write('Output path: ')
-    out = 'output.txt'
+    out = input()
     sys.stdout.write('\n')
     execute(prog, data, argv, out)
