@@ -1,18 +1,8 @@
-#! usr/bin/env python
-
-
-# TODO: error handling refactoring:
-# Interpreter should collect errors and return them afterwards
-
-# TODO: lvalue and rvalue indexing
-# map description
-# robot loading
-
 from __future__ import annotations
 import sys
 import parser
 import random
-from typing import List, NamedTuple, Optional
+from typing import List, Optional
 import robot
 import cell
 
@@ -39,11 +29,6 @@ class CastError(Exception):
     pass
 
 
-class ReturnError(Exception):
-    """Exception for RETURN keyword outside any function"""
-    pass
-
-
 class StopExecution(Exception):
     """Exception for RETURN keyword inside a function (like StopIteration in generators)"""
     pass
@@ -54,10 +39,10 @@ class CastManager:
         pass
     
     def __repr__(self):
-        return "I'm just a cast manager, and I have nothing interesting to show you!"
+        return "Cast Manager"
     
     @staticmethod
-    def cast(type_, var):
+    def cast(type_: str, var: Var):
         if type_ == var.type:
             return var
         if type_ == 'bool':
@@ -79,7 +64,7 @@ class CastManager:
             raise ValueError('wrong type')
     
     @staticmethod
-    def bool_to_int(value):
+    def bool_to_int(value: Var) -> Var:
         if value.value == 'true':
             return Var('int', 1)
         elif value.value == 'false':
@@ -89,7 +74,7 @@ class CastManager:
         raise ValueError
         
     @staticmethod
-    def int_to_bool(value):
+    def int_to_bool(value: Var) -> Var:
         if value.value == 0:
             return Var('bool', 'false')
         elif isinstance(value.value, int):
@@ -97,7 +82,7 @@ class CastManager:
         raise ValueError
     
     @staticmethod
-    def cell_to_bool(value):
+    def cell_to_bool(value: Var) -> Var:
         if value.value.type in ['empty', 'exit']:
             return Var('bool', 'true')
         elif value.value.type in ['box', 'wall']:
@@ -105,13 +90,13 @@ class CastManager:
         return value
     
     @staticmethod
-    def bool_to_cell(value):
+    def bool_to_cell(value: Var) -> Var:
         if value.value == 'undef':
             return Var('cell', robot.Undef())
         raise CastError
         
     @staticmethod
-    def cell_to_int(value):
+    def cell_to_int(value: Var) -> Var:
         if value.value.type == 'empty':
             return Var('int', 0)
         elif value.value.type == 'wall':
@@ -125,7 +110,7 @@ class CastManager:
         raise ValueError
             
     @staticmethod
-    def int_to_cell(value):
+    def int_to_cell(value: Var) -> Var:
         if value.value == 0:
             return Var('cell', cell.Empty())
         elif value.value == 'inf':
@@ -140,17 +125,6 @@ class CastManager:
 
 
 class Interpreter:
-    """
-    
-    ERRORS:
-    (1) - 'nomain' - no main function (no entry point in code)
-    (2) - 'redecl' - redeclaration of a variable
-    (3) - 'undecl' - undeclared variable usage
-    (5) - 'unfunc' - undeclared function usage
-    (6) - 'cast' - CastError
-    (7) - 'value' - ValueError
-    
-    """
        
     def __init__(self):
         """
@@ -169,7 +143,7 @@ class Interpreter:
         self._rval = False  # rvalue flag
         self.errors = []
         
-    def interpret(self, program: str, map_description: list = None, robot_description: Optional[dict] = None,
+    def interpret(self, program: str, map_description: Optional[dict] = None, robot_description: Optional[dict] = None,
                   robot_mode: bool = False, argv: list = None):
         """
         Interpret a program
@@ -181,8 +155,7 @@ class Interpreter:
             robot_mode(bool): if True, interpret a program for robot, otherwise interpret abstract code
             argv(list[int]): console params vector
         """
-        # TODO: robot implementation
-        self.map = map_description  # Three-dimensional array of Cell objects
+        self.map = map_description
         if robot_mode:
             self.robot = robot.Robot(robot_description['x'],
                                      robot_description['y'],
@@ -204,7 +177,7 @@ class Interpreter:
         for err in self.errors:
             sys.stderr.write(err)
 
-    def _interpret_node(self, node: parser.SyntaxTreeNode):
+    def _interpret_node(self, node: parser.SyntaxTreeNode) -> Optional[Var]:
         if node is None:
             return
         if node.type == 'program':
@@ -307,11 +280,11 @@ class Interpreter:
             var.type = expr.type
             var.value = expr.value
 
-    def _variable(self, node):
+    def _variable(self, node: parser.SyntaxTreeNode):
         var = node.value
         return self._find_var(var)
 
-    def _indexing(self, node) -> Var:
+    def _indexing(self, node: parser.SyntaxTreeNode) -> Var:
         index = self.cast.cast('int', self._interpret_node(node.children))
         if self._rval:  # return only value
             var = self._find_var(node.value)
@@ -332,7 +305,7 @@ class Interpreter:
                  for _ in range(index.value-len(var.value)+1)]  # extend the array
             return var.value[index.value]
         
-    def _function_call(self, node):
+    def _function_call(self, node: parser.SyntaxTreeNode):
         param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
             else self._interpret_node(node.children)
         func_name = node.value
@@ -351,7 +324,7 @@ class Interpreter:
         self.scope -= 1
         self.sym_table.pop()
         
-    def _while(self, node):
+    def _while(self, node: parser.SyntaxTreeNode):
         try:
             while True:
                 condition = self.cast.cast('bool', self._interpret_node(node.children['condition'])).value
@@ -368,8 +341,7 @@ class Interpreter:
         except NameError:
             self._error('name', node)
                 
-    def _if(self, node):
-        cond_value = self._interpret_node(node.children['condition'])
+    def _if(self, node: parser.SyntaxTreeNode):
         condition = self.cast.cast('bool', self._interpret_node(node.children['condition'])).value
         if condition == 'true':
             self._interpret_node(node.children['body'])
@@ -378,7 +350,7 @@ class Interpreter:
         else:
             self._interpret_node(node.children['elund'])
         
-    def _unnamed_function(self, node):
+    def _unnamed_function(self, node: parser.SyntaxTreeNode):
         param = self._interpret_node(node.children['param'])
         self.scope += 1
         self.sym_table.append(dict())
@@ -387,7 +359,7 @@ class Interpreter:
         self.scope -= 1
         self.sym_table.pop()
 
-    def _find_var(self, expr) -> Var:
+    def _find_var(self, expr: str) -> Var:
         if expr in self.sym_table[0].keys():
             return self.sym_table[0][expr]
         if expr in self.sym_table[self.scope].keys():
@@ -395,7 +367,7 @@ class Interpreter:
         
     def _sizeof(self, node) -> Var:
         expr = self._interpret_node(node)
-        var = self._find_var(expr)
+        var = self._find_var(expr.value)
         if var:
             return Var('int', len(var.value)) if isinstance(var.value, list) else Var('int', 1)
         return Var('int', 'nan')

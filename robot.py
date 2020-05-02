@@ -1,31 +1,17 @@
 from __future__ import annotations
 from cell import *
-from typing import List
 
 
 class Robot:
-    def __init__(self, x, y, rot, capacity, map_):
-        # Rotation:
-        #  -1 <-- -->+1
-        #    --------
-        #   /   0    \
-        #  /5        1\
-        # /            \
-        # \            /
-        #  \4        2/
-        #   \   3    /
-        #    --------
-        #
-        #   Coordinates:
-        #   ^ Y  ^ X
-        #   |   /
-        #   |  /
-        #   | /
-        #   |/
-        #   /
-        #
-        #
-        #
+    def __init__(self, x: int, y: int, rot: int, capacity: int, map_: dict):
+        """
+        Parameters:
+            x(int): x coordinate (bottom-right)
+            y(int): y coordinate (bottom)
+            rot(int): rotation from 0 (bottom) to 5 (bottom-left) counterclockwise
+            capacity(int): boxes weight limit
+            map_(dict): two-dimensional dict of Cell object
+        """
         self.x = x
         self.y = y
         self.rot = rot
@@ -39,6 +25,7 @@ Slots: {self.slots}
 Capacity: {self.sum()}/{self.capacity}'''
 
     def sum(self):
+        """Return total weight of boxes the robot has loaded into its slots"""
         return sum([box.weight for box in self.slots.values() if box])
 
     def next(self) -> Cell:
@@ -71,7 +58,7 @@ Capacity: {self.sum()}/{self.capacity}'''
         if self.rot == 5:
             return self.map[self.x+1][self.y-1]
 
-    def forward(self, dist) -> str:  # what if cell = undef??
+    def forward(self, dist) -> str:
         for i in range(dist):
             if self.next().type.type in ['box', 'wall']:
                 if not i:

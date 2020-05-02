@@ -6,6 +6,16 @@ import json_convert
 
 
 def execute(program_file: str, map_file: str, argv: str, output_file: str):
+    """
+    Execute the program
+
+    Parameters:
+        program_file(str): path to the text file with the program
+        map_file(str): path to the .json file with map and robot descriptions
+        argv(str): console args for main function of the program
+        output_file(str): path to the output file where the interpretation results will be written
+
+    """
     if os.path.isfile(program_file) and os.path.isfile(map_file):
         map_dict, robot = json_convert.convert(map_file)
         with open(program_file, 'r') as pr_f:
