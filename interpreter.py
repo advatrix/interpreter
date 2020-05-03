@@ -2,7 +2,7 @@ from __future__ import annotations
 import sys
 import parser
 import random
-from typing import List, Optional
+from typing import List, Optional, Union
 import robot
 import cell
 
@@ -388,35 +388,35 @@ class Interpreter:
         except CastError:
             self._error('cast', node)
             
-    def _left(self):
+    def _left(self) -> Var:
         return Var('bool', self.robot.left())
         
-    def _right(self):
+    def _right(self) -> Var:
         return Var('bool', self.robot.right())
         
-    def _load(self, node):
+    def _load(self, node: parser.SyntaxTreeNode) -> Var:
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
             return Var('bool', self.robot.load(expr.value))
         except CastError:
             self._error('cast', node)
         
-    def _drop(self, node):
+    def _drop(self, node: parser.SyntaxTreeNode) -> Var:
         try:
             expr = self.cast.cast('int', self._interpret_node(node))
             return Var('bool', self.robot.drop(expr.value))
         except CastError:
             self._error('cast', node)
             
-    def _look(self):
+    def _look(self) -> Var:
         return Var('int', self.robot.look())
     
-    def _test(self):
+    def _test(self) -> Var:
         return Var('cell', self.robot.test())
     
     # ARITHMETICAL AND LOGICAL OPERATORS #
     
-    def _negative(self, node):
+    def _negative(self, node: parser.SyntaxTreeNode) -> Var:
         expr = self._interpret_node(node)
         try:
             casted_expr = self.cast.cast('int', expr)
@@ -424,7 +424,7 @@ class Interpreter:
         except CastError:
             self._error('cast', node)
     
-    def _sum(self, node):
+    def _sum(self, node: parser.SyntaxTreeNode) -> Var:
         expr = self._interpret_node(node)
         if isinstance(expr.value, list):
             return Var('int', sum([self.cast.cast('int', a).value for a in expr.value]))
@@ -504,7 +504,7 @@ class Interpreter:
     
     # VARIABLES STATEMENTS #
         
-    def _const(self, value):
+    def _const(self, value: Union[int, str]) -> Var:
         if value.isdigit():
             return Var('int', int(value))
         elif value == 'inf':
@@ -560,13 +560,18 @@ class Interpreter:
                 arr = [self._interpret_node(i) for i in nodearr]
                 self._assign_array(_type.value, variable, arr)
                 
-    def _create_new_var(self, _type, name: str):
+    def _create_new_var(self, _type: str, name: str):
+        """Create new variable in symbol table
+
+        Raises:
+            RedeclarationError: if entity (function or variable) with this name already exists at this scope
+        """
         if name in self.sym_table[self.scope].keys():
             raise RedeclarationError
         self.sym_table[self.scope][name] = Var(_type, None)
                 
     def _assign(self, _type: str, variable: str, expr: Var, casting=True) -> None:
-        """Assign a variable to expression
+        """Assign variable value to expression
 
         Parameters:
             casting (bool): flag of variable necessity to be casted to expr type
@@ -590,6 +595,15 @@ class Interpreter:
                     var.value = self.cast.cast(var.type, expr).value
 
     def _assign_array(self, _type: str, variable: str, arr: List[Var], casting=True):
+        """Assign variable value to array
+
+        Parameters:
+            casting (bool): flag of variable necessity to be casted to expr type
+                for example, if the variable is assigned just after being declared, casting is not needed
+
+        Raises:
+            CastError -- if expr casting to variable type was unsuccessful
+        """
         var = self._find_var(variable)
         if var:
             if casting:
@@ -601,12 +615,13 @@ class Interpreter:
             else:
                 var.value = [self.cast.cast(var.type, a) for a in arr]
             
-    def _array(self, node) -> list:
+    def _array(self, node: parser.SyntaxTreeNode) -> list:
+        """Return a list of expressions from a node of array type"""
         ret = []
         self._array_from_tree(node, ret)
         return ret
         
-    def _array_from_tree(self, node, ret: list):
+    def _array_from_tree(self, node: parser.SyntaxTreeNode, ret: list):
         if node:
             if node.children:
                 if isinstance(node.children, list):
@@ -617,7 +632,7 @@ class Interpreter:
             else:
                 ret.append(node)
 
-    def _error(self, err_type, node=None):
+    def _error(self, err_type: str, node=None):
         if err_type == 'nomain':
             self.errors.append('Error: no main function')
         elif err_type == 'redecl':

@@ -33,6 +33,9 @@ def execute(program_file: str, map_file: str, argv: str, output_file: str):
             o.write(str(intr.map))
             o.write('\n\n')
             o.write(str(intr.robot))
+            o.write('\n\nRobot log:\n')
+            for line in intr.robot.log:
+                o.write(line + '\n')
 
     else:
         sys.stderr.write('Invalid file names\n')

@@ -18,6 +18,7 @@ class Robot:
         self.capacity = capacity
         self.slots = dict()
         self.map = map_
+        self.log = [f'Started at {self.x},{self.y}:{self.rot}']
 
     def __repr__(self):
         return f'''(x:{self.x}, y:{self.y}), rot:{self.rot}
@@ -59,11 +60,17 @@ Capacity: {self.sum()}/{self.capacity}'''
             return self.map[self.x+1][self.y-1]
 
     def forward(self, dist) -> str:
+        if dist < 1:
+            self.log.append(f'Moved forward 0 cells. Pos: {self.x},{self.y}:{self.rot}')
+            return 'true'
         for i in range(dist):
             if self.next().type.type in ['box', 'wall']:
                 if not i:
+                    self.log.append(f'Failed to move forward {dist} cells. Pos: {self.x},{self.y}:{self.rot}')
                     return 'false'
                 elif i < dist:
+                    self.log.append(
+                        f'Failed to move forward {dist} cells, moved {i+1} instead. Pos: {self.x},{self.y}:{self.rot}')
                     return 'undef'
                 break
             if self.rot == 0:
@@ -80,14 +87,21 @@ Capacity: {self.sum()}/{self.capacity}'''
             elif self.rot == 5:
                 self.y += 1
                 self.x -= 1
+        self.log.append(f'Moved forward {dist} cells, pos: {self.x},{self.y}:{self.rot}')
         return 'true'
 
     def backward(self, dist) -> str:
+        if not dist:
+            self.log.append(f'Moved backward 0 cells. Pos: {self.x},{self.y}:{self.rot}')
+            return 'true'
         for i in range(dist):
             if self.prev().type.type in ['box', 'wall']:
                 if not i:
+                    self.log.append(f'Failed to move backward {dist} cells, pos: {self.x},{self.y}:{self.rot}')
                     return 'false'
                 elif i < dist:
+                    self.log.append(
+                        f'Failed to move backward {dist} cells, moved {i+1} instead, pos: {self.x}{self.y}:{self.rot}')
                     return 'undef'
                 break
             if self.rot == 0:
@@ -104,41 +118,53 @@ Capacity: {self.sum()}/{self.capacity}'''
             elif self.rot == 5:
                 self.y -= 1
                 self.x += 1
+        self.log.append(f'Moved backward {dist} cells, pos: {self.x},{self.y}:{self.rot}')
         return 'true'
 
     def left(self) -> str:
         if self.sum() < self.capacity:
             self.rot = (self.rot - 1) % 6
+            self.log.append(f'Turned left, pos: {self.x},{self.y}:{self.rot}')
             return 'true'
+        self.log.append(f'Failed to turn left, pos: {self.x},{self.y}:{self.rot}')
         return 'false'
 
     def right(self) -> str:
         if self.sum() < self.capacity:
             self.rot = (self.rot + 1) % 6
+            self.log.append(f'Turned right, pos: {self.x},{self.y}:{self.rot}')
             return 'true'
+        self.log.append(f'Failed to turn right, pos: {self.x},{self.y}:{self.rot}')
         return 'false'
 
     def load(self, expr: int) -> str:
         if self.next().type.type != 'box':
+            self.log.append(f'Tried to load into {expr}, returned undef')
             return 'undef'
         if expr in self.slots.keys():
+            self.log.append(f'Tried to load into {expr}, returned false - slot is busy')
             return 'false'
         self.slots[expr] = self.next().type
         self.next().type = Empty()
+        self.log.append(f'Loaded box into {expr}')
         return 'true'
 
     def drop(self, expr: int) -> str:
         if expr not in self.slots.keys():
+            self.log.append(f'Tried to drop box from {expr}, returned undef')
             return 'undef'
         if self.next().type.type == 'empty' and expr in self.slots.keys():
             self.next().type = self.slots[expr]
             del self.slots[expr]
+            self.log.append(f'Dropped box from {expr}')
             return 'true'
         elif self.next().type.type != 'empty':
+            self.log.append(f'Tried to drop box from {expr}, cell is busy, returned false')
             return 'false'
+        self.log.append(f'Tried to drop box from {expr}, returned undef')
         return 'undef'
 
-    def look(self):
+    def look(self) -> int:
         i = -1
         x = self.x
         y = self.y
