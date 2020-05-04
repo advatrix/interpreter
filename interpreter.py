@@ -306,6 +306,9 @@ class Interpreter:
             return var.value[index.value]
         
     def _function_call(self, node: parser.SyntaxTreeNode):
+        if self.scope == 1000000:
+            self._error('recursion', node)
+            raise RecursionError
         param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
             else self._interpret_node(node.children)
         func_name = node.value
@@ -317,6 +320,7 @@ class Interpreter:
         func_subtree = self.funcs[func_name] if func_name in self.funcs.keys() \
             else self.sym_table[self.scope-1][func_name]
         self.sym_table[self.scope][func_subtree.children['param'].value] = param
+        self.sym_table[self.scope][func_name] = func_subtree
         try:
             self._interpret_node(func_subtree.children['body'])
         except StopExecution:
@@ -648,3 +652,7 @@ class Interpreter:
         elif err_type == 'value':
             self.errors.append(
                 f'ValueError: incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
+        elif err_type == 'recursion':
+            self.errors.append(
+                f'RecursionError: maximum recursion depth exceeded: "{node.value} at {node.lineno}:{node.lexpos}'
+            )
