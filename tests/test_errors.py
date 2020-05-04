@@ -75,3 +75,20 @@ def test_multiple_errors():
     assert intr.errors[1].split()[0] == 'UndeclError:'
     assert intr.errors[2].split()[0] == 'UnknownFuncError:'
     assert intr.errors[3].split()[0] == 'RedeclError:'
+
+
+def test_recursion_exceeding():
+    intr = interpreter.Interpreter()
+    program = """
+    function rec(n) do
+        rec(n)
+    done
+    
+    function main(argv) do
+        int n := 0
+        rec(n)
+    done
+    """
+    intr.interpret(program)
+    assert len(intr.errors) == 1
+    assert intr.errors[0].split()[0] == 'RecursionError:'

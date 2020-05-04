@@ -130,3 +130,4 @@ def test_fibonacci_seven():
     """
     intr.interpret(fibonacci+main)
     assert intr.sym_table[0]['num'].value == 13
+
