@@ -103,7 +103,8 @@
         "type": "empty"
       },
       "-2": {
-        "type": "empty"
+        "type": "box",
+	"weight": 100
       },
       "-3": {
         "type": "empty"

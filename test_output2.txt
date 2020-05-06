@@ -1,0 +1,226 @@
+Global program variables:
+{'traverse_obstacle': function_description traverse_obstacle 1:, 'drop_boxes': function_description drop_boxes 115:2912, 'main': function_description main 143:3515, 'argv': int, [int, 1], 'boxes': int, 0, 'turn': int, -2, 'argspack': int, [int, 0, int, -2]}
+
+Errors:
+
+
+{-3: {3: -3 3 : wall, 2: -3 2 : wall, 1: -3 1 : wall, 0: -3 0 : wall, -1: -3 -1 : wall}, -2: {3: -2 3 : wall, 2: -2 2 : box, weight: 100, 1: -2 1 : empty, 0: -2 0 : wall, -1: -2 -1 : empty, -2: -2 -2 : wall}, -1: {2: -1 2 : wall, 1: -1 1 : box, weight: 10, 0: -1 0 : box, weight: 100, -1: -1 -1 : empty, -2: -1 -2 : wall}, 0: {2: 0 2 : wall, 1: 0 1 : empty, 0: 0 0 : box, weight: 10, -1: 0 -1 : wall, -2: 0 -2 : empty, -3: 0 -3 : wall}, 1: {1: 1 1 : wall, 0: 1 0 : wall, -1: 1 -1 : wall, -2: 1 -2 : empty, -3: 1 -3 : wall}, 2: {1: 2 1 : wall, 0: 2 0 : empty, -1: 2 -1 : empty, -2: 2 -2 : empty, -3: 2 -3 : box, weight: 100, -4: 2 -4 : wall}, 3: {0: 3 0 : wall, -1: 3 -1 : wall, -2: 3 -2 : exit, -3: 3 -3 : wall, -4: 3 -4 : wall}}
+
+(x:3, y:-2), rot:1
+Slots: {}
+Capacity: 0/100
+
+Robot log:
+Started at -2,2:0
+Turned left, pos: -2,2:5
+Turned right, pos: -2,2:0
+Turned left, pos: -2,2:5
+Turned left, pos: -2,2:4
+Turned right, pos: -2,2:5
+Turned left, pos: -2,2:4
+Turned left, pos: -2,2:3
+Turned right, pos: -2,2:4
+Turned left, pos: -2,2:3
+Loaded box into 0
+Turned left, pos: -2,2:2
+Turned right, pos: -2,2:3
+Moved forward 1 cells, pos: -2,1:3
+Turned left, pos: -2,1:2
+Turned right, pos: -2,1:3
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:4
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:5
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:0
+Dropped box from 0
+Turned right, pos: -2,1:1
+Turned right, pos: -2,1:2
+Loaded box into 0
+Turned left, pos: -2,1:1
+Turned right, pos: -2,1:2
+Moved forward 1 cells, pos: -1,0:2
+Turned right, pos: -1,0:3
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,0:4
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,0:5
+Dropped box from 0
+Turned right, pos: -1,0:0
+Turned right, pos: -1,0:1
+Moved forward 1 cells, pos: 0,0:1
+Turned right, pos: 0,0:2
+Turned left, pos: 0,0:1
+Turned left, pos: 0,0:0
+Turned right, pos: 0,0:1
+Turned left, pos: 0,0:0
+Moved forward 1 cells, pos: 0,1:0
+Turned right, pos: 0,1:1
+Turned left, pos: 0,1:0
+Turned left, pos: 0,1:5
+Turned right, pos: 0,1:0
+Turned left, pos: 0,1:5
+Turned left, pos: 0,1:4
+Turned right, pos: 0,1:5
+Turned left, pos: 0,1:4
+Loaded box into 0
+Turned left, pos: 0,1:3
+Turned right, pos: 0,1:4
+Moved forward 1 cells, pos: -1,1:4
+Turned right, pos: -1,1:5
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,1:0
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,1:1
+Dropped box from 0
+Turned right, pos: -1,1:2
+Turned right, pos: -1,1:3
+Moved forward 1 cells, pos: -1,0:3
+Turned right, pos: -1,0:4
+Turned left, pos: -1,0:3
+Loaded box into 0
+Turned left, pos: -1,0:2
+Turned right, pos: -1,0:3
+Moved forward 1 cells, pos: -1,-1:3
+Turned left, pos: -1,-1:2
+Turned right, pos: -1,-1:3
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,-1:4
+Dropped box from 0
+Turned right, pos: -1,-1:5
+Turned right, pos: -1,-1:0
+Moved forward 1 cells, pos: -1,0:0
+Turned right, pos: -1,0:1
+Moved forward 1 cells, pos: 0,0:1
+Turned right, pos: 0,0:2
+Turned left, pos: 0,0:1
+Turned left, pos: 0,0:0
+Turned right, pos: 0,0:1
+Turned left, pos: 0,0:0
+Loaded box into 0
+Turned left, pos: 0,0:5
+Turned right, pos: 0,0:0
+Moved forward 1 cells, pos: 0,1:0
+Turned left, pos: 0,1:5
+Turned right, pos: 0,1:0
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: 0,1:1
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: 0,1:2
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: 0,1:3
+Dropped box from 0
+Turned right, pos: 0,1:4
+Turned right, pos: 0,1:5
+Turned left, pos: 0,1:4
+Moved forward 1 cells, pos: -1,1:4
+Turned right, pos: -1,1:5
+Loaded box into 0
+Turned left, pos: -1,1:4
+Turned right, pos: -1,1:5
+Moved forward 1 cells, pos: -2,2:5
+Turned right, pos: -2,2:0
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,2:1
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,2:2
+Dropped box from 0
+Turned right, pos: -2,2:3
+Turned right, pos: -2,2:4
+Turned left, pos: -2,2:3
+Loaded box into 0
+Turned left, pos: -2,2:2
+Turned right, pos: -2,2:3
+Moved forward 1 cells, pos: -2,1:3
+Turned left, pos: -2,1:2
+Turned right, pos: -2,1:3
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:4
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:5
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,1:0
+Dropped box from 0
+Turned right, pos: -2,1:1
+Turned right, pos: -2,1:2
+Moved forward 1 cells, pos: -1,0:2
+Turned right, pos: -1,0:3
+Moved forward 1 cells, pos: -1,-1:3
+Turned right, pos: -1,-1:4
+Loaded box into 0
+Turned left, pos: -1,-1:3
+Turned right, pos: -1,-1:4
+Moved forward 1 cells, pos: -2,-1:4
+Turned right, pos: -2,-1:5
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,-1:0
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -2,-1:1
+Dropped box from 0
+Turned right, pos: -2,-1:2
+Turned right, pos: -2,-1:3
+Turned left, pos: -2,-1:2
+Turned left, pos: -2,-1:1
+Turned right, pos: -2,-1:2
+Turned left, pos: -2,-1:1
+Loaded box into 0
+Turned left, pos: -2,-1:0
+Turned right, pos: -2,-1:1
+Moved forward 1 cells, pos: -1,-1:1
+Turned left, pos: -1,-1:0
+Turned right, pos: -1,-1:1
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: -1,-1:2
+Dropped box from 0
+Turned right, pos: -1,-1:3
+Turned right, pos: -1,-1:4
+Moved forward 1 cells, pos: -2,-1:4
+Turned right, pos: -2,-1:5
+Turned left, pos: -2,-1:4
+Turned left, pos: -2,-1:3
+Turned right, pos: -2,-1:4
+Turned left, pos: -2,-1:3
+Turned left, pos: -2,-1:2
+Turned right, pos: -2,-1:3
+Turned left, pos: -2,-1:2
+Turned left, pos: -2,-1:1
+Turned right, pos: -2,-1:2
+Turned left, pos: -2,-1:1
+Moved forward 1 cells, pos: -1,-1:1
+Turned right, pos: -1,-1:2
+Loaded box into 0
+Turned left, pos: -1,-1:1
+Turned right, pos: -1,-1:2
+Moved forward 1 cells, pos: 0,-2:2
+Turned right, pos: 0,-2:3
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: 0,-2:4
+Tried to drop box from 0 but the cell was busy
+Turned right, pos: 0,-2:5
+Dropped box from 0
+Turned right, pos: 0,-2:0
+Turned right, pos: 0,-2:1
+Loaded box into 0
+Turned left, pos: 0,-2:0
+Turned right, pos: 0,-2:1
+Moved forward 1 cells, pos: 1,-2:1
+Turned right, pos: 1,-2:2
+Dropped box from 0
+Turned right, pos: 1,-2:3
+Turned right, pos: 1,-2:4
+Moved forward 1 cells, pos: 0,-2:4
+Turned right, pos: 0,-2:5
+Loaded box into 0
+Turned left, pos: 0,-2:4
+Turned right, pos: 0,-2:5
+Moved forward 1 cells, pos: -1,-1:5
+Turned right, pos: -1,-1:0
+Dropped box from 0
+Turned right, pos: -1,-1:1
+Turned right, pos: -1,-1:2
+Moved forward 1 cells, pos: 0,-2:2
+Turned right, pos: 0,-2:3
+Turned left, pos: 0,-2:2
+Turned left, pos: 0,-2:1
+Moved forward 3 cells, pos: 3,-2:1
+Moved forward 0 cells. Pos: 3,-2:1

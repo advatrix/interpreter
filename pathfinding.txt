@@ -1,8 +1,29 @@
 function traverse_obstacle(args) do
     boxes := args(0)
     turn := args(1)
-    int dist
+    int dist, boxturn := 0
     while turn do
+        if boxes do
+            boxturn := 5
+            while boxturn > 0 do
+                right
+                if test = exit do
+                    dist := look + 1
+                    forward dist
+                    return
+                done
+
+                if drop boxes - 1 do
+                    boxes := boxes - 1
+                    if boxes = 0 do
+                        boxturn := 1
+                    done
+                done
+                boxturn := boxturn - 1
+            finish
+                right
+            done
+        done
 
         if test = exit do
             dist := look + 1
@@ -92,22 +113,27 @@ done
 
 
 function drop_boxes(boxes) do
+    int boxturn, dist
     while boxes do
-        right
-        right
-        if drop boxes do
-            boxes := boxes - 1
+        boxturn := 5
+        while boxturn > 0 do
+            right
+            if test = exit do
+                dist := look + 1
+                forward dist
+                return
+            done
+
+            if drop boxes - 1 do
+                boxes := boxes - 1
+                if boxes = 0 do
+                    boxturn := 1
+                done
+            done
+            boxturn := boxturn - 1
+        finish
+            right
         done
-        right
-        if drop boxes do
-            boxes := boxes - 1
-        done
-        right
-        if drop boxes do
-            boxes := boxes - 1
-        done
-        right
-        right
         if forward 1 = false do
             return
         done

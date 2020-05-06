@@ -46,10 +46,12 @@
         "weight": 10
       },
       "0": {
-        "type": "empty"
+        "type": "box",
+	"weight": 100
       },
       "-1": {
-        "type": "empty"
+        "type": "box",
+	"weight": 100
       },
       "-2": {
         "type": "wall"
@@ -86,7 +88,8 @@
         "type": "wall"
       },
       "-2": {
-        "type": "empty"
+        "type": "box",
+	"weight": 100
       },
       "-3": {
         "type": "wall"

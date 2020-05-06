@@ -122,27 +122,27 @@ Capacity: {self.sum()}/{self.capacity}'''
         return 'true'
 
     def left(self) -> str:
-        if self.sum() < self.capacity:
+        if self.sum() <= self.capacity:
             self.rot = (self.rot - 1) % 6
             self.log.append(f'Turned left, pos: {self.x},{self.y}:{self.rot}')
             return 'true'
-        self.log.append(f'Failed to turn left, pos: {self.x},{self.y}:{self.rot}')
+        self.log.append(f'Failed to turn left, pos: {self.x},{self.y}:{self.rot}; capacity:{self.sum()}/{self.capacity}')
         return 'false'
 
     def right(self) -> str:
-        if self.sum() < self.capacity:
+        if self.sum() <= self.capacity:
             self.rot = (self.rot + 1) % 6
             self.log.append(f'Turned right, pos: {self.x},{self.y}:{self.rot}')
             return 'true'
-        self.log.append(f'Failed to turn right, pos: {self.x},{self.y}:{self.rot}')
+        self.log.append(f'Failed to turn right, pos: {self.x},{self.y}:{self.rot}, capacity:{self.sum()}/{self.capacity}')
         return 'false'
 
     def load(self, expr: int) -> str:
         if self.next().type.type != 'box':
-            self.log.append(f'Tried to load into {expr}, returned undef')
+            self.log.append(f'Tried to load into {expr} but there was no box on the cell')
             return 'undef'
         if expr in self.slots.keys():
-            self.log.append(f'Tried to load into {expr}, returned false - slot is busy')
+            self.log.append(f'Tried to load into {expr} but that slot was busy')
             return 'false'
         self.slots[expr] = self.next().type
         self.next().type = Empty()
@@ -151,7 +151,7 @@ Capacity: {self.sum()}/{self.capacity}'''
 
     def drop(self, expr: int) -> str:
         if expr not in self.slots.keys():
-            self.log.append(f'Tried to drop box from {expr}, returned undef')
+            self.log.append(f'Tried to drop box from {expr} but that slot was empty')
             return 'undef'
         if self.next().type.type == 'empty' and expr in self.slots.keys():
             self.next().type = self.slots[expr]
@@ -159,7 +159,7 @@ Capacity: {self.sum()}/{self.capacity}'''
             self.log.append(f'Dropped box from {expr}')
             return 'true'
         elif self.next().type.type != 'empty':
-            self.log.append(f'Tried to drop box from {expr}, cell is busy, returned false')
+            self.log.append(f'Tried to drop box from {expr} but the cell was busy')
             return 'false'
         self.log.append(f'Tried to drop box from {expr}, returned undef')
         return 'undef'
