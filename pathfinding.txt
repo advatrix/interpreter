@@ -50,6 +50,12 @@ function traverse_obstacle(args) do
                     forward 1
                 done
                 eldef do
+                    if test = exit do
+                        dist := look + 1
+                        forward dist
+                        return
+                    done
+
                     drop boxes
                     left
 
@@ -63,6 +69,12 @@ function traverse_obstacle(args) do
                                 forward 1
                             done
                             eldef do
+                                if test = exit do
+                                    dist := look + 1
+                                    forward dist
+                                    return
+                                done
+
                                 left
                                 turn := turn - 1
                             done
@@ -91,6 +103,13 @@ function traverse_obstacle(args) do
                             forward 1
                         done
                         eldef do
+
+                            if test = exit do
+                                dist := look + 1
+                                forward dist
+                                return
+                            done
+
                             left
                             turn := turn - 1
                         done

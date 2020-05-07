@@ -1,0 +1,140 @@
+{"map" :{
+    "-3": {
+      "3": {
+        "type": "wall"
+      },
+      "2": {
+        "type": "wall"
+      },
+      "1": {
+        "type": "wall"
+      },
+      "0": {
+        "type": "wall"
+      },
+      "-1": {
+        "type": "wall"
+      }
+    },
+    "-2": {
+      "3": {
+        "type": "wall"
+      },
+      "2": {
+        "type": "empty"
+      },
+      "1": {
+        "type": "box",
+        "weight": 10
+      },
+      "0": {
+        "type": "wall"
+      },
+      "-1": {
+        "type": "empty"
+      },
+      "-2": {
+        "type": "wall"
+      }
+    },
+    "-1": {
+      "2": {
+        "type": "wall"
+      },
+      "1": {
+        "type": "box",
+        "weight": 10
+      },
+      "0": {
+        "type": "empty"
+      },
+      "-1": {
+        "type": "empty"
+      },
+      "-2": {
+        "type": "wall"
+      }
+    },
+    "0": {
+      "2": {
+        "type": "wall"
+      },
+      "1": {
+        "type": "empty"
+      },
+      "0": {
+        "type": "empty"
+      },
+      "-1": {
+        "type": "wall"
+      },
+      "-2": {
+        "type": "empty"
+      },
+      "-3": {
+        "type": "wall"
+      }
+    },
+    "1": {
+      "1": {
+        "type": "wall"
+      },
+      "0": {
+        "type": "wall"
+      },
+      "-1": {
+        "type": "wall"
+      },
+      "-2": {
+        "type": "empty"
+      },
+      "-3": {
+        "type": "wall"
+      }
+    },
+    "2": {
+      "1": {
+        "type": "wall"
+      },
+      "0": {
+        "type": "empty"
+      },
+      "-1": {
+        "type": "empty"
+      },
+      "-2": {
+        "type": "box",
+	"weight": 150
+      },
+      "-3": {
+        "type": "wall"
+      },
+      "-4": {
+        "type": "wall"
+      }
+    },
+    "3": {
+      "0": {
+        "type": "wall"
+      },
+      "-1": {
+        "type": "wall"
+      },
+      "-2": {
+        "type": "exit"
+      },
+      "-3": {
+        "type": "wall"
+      },
+      "-4": {
+        "type": "wall"
+      }
+    }
+  },
+  "robot": {
+    "x": 1,
+    "y": -2,
+    "rotation": 0,
+    "capacity": 100
+  }
+}
