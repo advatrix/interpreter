@@ -1,4 +1,7 @@
 import interpreter
+import sys
+
+sys.setrecursionlimit(10000000)
 
 
 def test_no_main():

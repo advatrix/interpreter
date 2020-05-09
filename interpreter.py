@@ -308,7 +308,7 @@ class Interpreter:
             return var.value[index.value]
         
     def _function_call(self, node: parser.SyntaxTreeNode):
-        if self.scope == 317:
+        if self.scope == 4242:
             self._error('recursion', node)
             raise RecursionError
         param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
