@@ -1,0 +1,24 @@
+Global program variables:
+{'traverse_obstacle': function_description traverse_obstacle 1:, 'drop_boxes': function_description drop_boxes 134:3532, 'main': function_description main 162:4135, 'argv': int, [int, 1], 'boxes': int, 1, 'turn': int, 0, 'argspack': int, [int, 1, int, 0]}
+
+Errors:
+
+
+{-3: {3: -3 3 : wall, 2: -3 2 : wall, 1: -3 1 : wall, 0: -3 0 : wall, -1: -3 -1 : wall}, -2: {3: -2 3 : wall, 2: -2 2 : empty, 1: -2 1 : box, weight: 10, 0: -2 0 : wall, -1: -2 -1 : empty, -2: -2 -2 : wall}, -1: {2: -1 2 : wall, 1: -1 1 : box, weight: 10, 0: -1 0 : empty, -1: -1 -1 : empty, -2: -1 -2 : wall}, 0: {2: 0 2 : wall, 1: 0 1 : empty, 0: 0 0 : empty, -1: 0 -1 : wall, -2: 0 -2 : empty, -3: 0 -3 : wall}, 1: {1: 1 1 : wall, 0: 1 0 : wall, -1: 1 -1 : wall, -2: 1 -2 : empty, -3: 1 -3 : wall}, 2: {1: 2 1 : wall, 0: 2 0 : empty, -1: 2 -1 : empty, -2: 2 -2 : empty, -3: 2 -3 : empty, -4: 2 -4 : wall}, 3: {0: 3 0 : wall, -1: 3 -1 : wall, -2: 3 -2 : exit, -3: 3 -3 : wall, -4: 3 -4 : wall}}
+
+(x:3, y:-2), rot:1
+Slots: {0: box, weight: 100}
+Capacity: 100/100
+
+Robot log:
+Started at 2,-3:0
+Turned left, pos: 2,-3:5
+Turned right, pos: 2,-3:0
+Loaded box into 0
+Turned left, pos: 2,-3:5
+Turned right, pos: 2,-3:0
+Moved forward 1 cells, pos: 2,-2:0
+Turned right, pos: 2,-2:1
+Moved forward 1 cells, pos: 3,-2:1
+Moved forward 0 cells. Pos: 3,-2:1
+Moved forward 0 cells. Pos: 3,-2:1

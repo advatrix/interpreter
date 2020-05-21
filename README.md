@@ -3,11 +3,11 @@ This is an interpreter of a simple programming language for robot travelling on 
 
 The grid consists of walls, empty cells, cells with boxes on, and an exit cell.
 
-The robot can move into an adjacent cell if there is no obstacle on it. Robot can load and drop boxes.
+The robot can move into an adjacent cell if there is no obstacle on it. The robot can load and drop boxes.
 
 ## Language syntax
 
-Every statement of the language should end with newline. The language is case-insensitive.
+Every statement of the language must end with newline. The language is case-insensitive.
 
 ### Types
 
@@ -78,7 +78,7 @@ elund do
 done
 ```
 
-If the `expression` is `false`, `eldef` block will be executed, otherwise if it is `undef`, `elund` block will be executed. `eldef` and `elund` blocks are optional.
+If the `expression` equals `false`, `eldef` block will be executed, otherwise if it is `undef`, `elund` block will be executed. `eldef` and `elund` blocks are optional.
 
 #### Functions
 ##### Declaration:
@@ -94,7 +94,7 @@ done
 ##### Usage:
 `func_name(arg)`
 
-Functions are isolated scopes and have only one parameter through which it returns values.
+Functions are isolated scopes and have only one parameter through which they return values. *Only the function itself and its argument are visible from the inner scope*.
 
 Function execution can be interrupted by `return` keyword.
 
@@ -114,14 +114,18 @@ Functions can be declared inside another function. Functions can also be unnamed
 ## Repo description
 
 ### Files
-**lexer.py**, **parser.py** - lexical and syntax analyzers, both build with Python Lex-Yacc. Receive program text, return syntax tree.
+**lexer.py**, **parser.py** - lexical and syntax analyzers, both are built with Python Lex-Yacc. The parser receives program text and returns a syntax tree, using the lexer.
 
-**interpreter.py** - an interpreter. Receives program text, map description, robot description and command line arguments (1 or 0 detecting if the program deals with robot or not). 
-Returns error log, robot and map description after interpreting. 
+**interpreter.py** - an interpreter. It receives program text, map description, robot description and command line arguments (1 or 0 detecting if the program deals with robot or not). 
+It returns error log, robot and map description after interpreting. 
 
-**main.py** - the main file of a project. Receives 4 arguments - program text file, .json file with map and robot description, output file and command line arguments.
+**main.py** - the main file of the project. It receives 4 arguments:
+- name of the program text file
+- name of the .json file with map and the robot description
+- name of the output file
+- command line arguments.
 
-There are also some examples of programs and interpreting result: pathfinding program, inputs (map.json and map2.json) and outputs.
+There are also some examples of programs and interpreting result: pathfinding program, inputs (map.json and map2.json) and outputs, see **examples** folder.
 
 Unit tests are also written.
 

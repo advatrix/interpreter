@@ -166,7 +166,6 @@ class Interpreter:
         self.tree, self.funcs = self.parser.parse(program)
         self.argv = argv
         self._interpret_node(self.tree)
-        # self._interpret_node(self.tree)
         if 'main' not in self.sym_table[0].keys():
             self._error('nomain')
         else:
@@ -308,7 +307,7 @@ class Interpreter:
             return var.value[index.value]
         
     def _function_call(self, node: parser.SyntaxTreeNode):
-        if self.scope == 4242:
+        if self.scope == 1000:
             self._error('recursion', node)
             raise RecursionError
         param = self._interpret_node(node.children[0]) if isinstance(node.children, list) \
@@ -586,7 +585,6 @@ class Interpreter:
         Raises:
             CastError -- if expr casting to variable type was unsuccessful
         """
-        # expr = deepcopy(expr)
         var = self._find_var(variable)
         if var:
             if expr is None:
@@ -656,5 +654,4 @@ class Interpreter:
                 f'ValueError: incompatible value and type: "{node.value}" ar {node.lineno}:{node.lexpos}\n')
         elif err_type == 'recursion':
             self.errors.append(
-                f'RecursionError: maximum recursion depth exceeded: "{node.value} at {node.lineno}:{node.lexpos}'
-            )
+                f'RecursionError: maximum recursion depth exceeded: "{node.value} at {node.lineno}:{node.lexpos}')
