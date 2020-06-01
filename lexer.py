@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import ply.lex as lex
+import lex as lex
 import re
 import sys
 

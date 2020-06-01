@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
 from __future__ import annotations
-import ply.yacc as yacc
+import yacc as yacc
 from lexer import Lexer
-from ply.lex import LexError
+from lex import LexError
 import sys
 from typing import List, Dict, Tuple
 
